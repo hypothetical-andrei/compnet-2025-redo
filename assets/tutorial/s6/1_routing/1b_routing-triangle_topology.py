@@ -50,19 +50,20 @@ class TriangleRoutingTopo(Topo):
 
 def run():
     """
-    Creează rețeaua, îi setează adrese IP și lansează CLI-ul pentru configurări.
-    Rutele NU sunt adăugate automat — studentul trebuie să le scrie manual.
+    Creeaza reteaua, ii seteaza adrese IP si lanseaza CLI-ul pentru configurari.
+    Rutele de baza sunt adaugate automat astfel incat h1 si h3 sa se poata pingui.
+    Studentul va modifica / extinde ulterior rutarile.
     """
     topo = TriangleRoutingTopo()
     net = Mininet(topo=topo, link=TCLink, controller=None)
     net.start()
 
-    # Referințe către noduri
+    # Referinte catre noduri
     r1, r2, r3 = net.get('r1'), net.get('r2'), net.get('r3')
     h1, h3 = net.get('h1'), net.get('h3')
 
     # ------------------------------
-    # Configurări IPv4 pe interfețe
+    # Configurari IPv4 pe interfete
     # ------------------------------
 
     # h1 <-> r1
@@ -75,23 +76,35 @@ def run():
 
     # r2 <-> r3
     r2.setIP("10.0.23.1/30", intf="r2-eth1")
-    r3.setIP("10.0.23.2/30", intf="r3-eth0")
+    r3.setIP("10.0.23.2/30", intf="r3-eth1")   # FIX: r3-eth1, nu r3-eth0
 
     # r1 <-> r3
     r1.setIP("10.0.13.1/30", intf="r1-eth2")
-    r3.setIP("10.0.13.2/30", intf="r3-eth1")
+    r3.setIP("10.0.13.2/30", intf="r3-eth2")   # FIX: r3-eth2, nu r3-eth1
 
     # r3 <-> h3
-    r3.setIP("10.0.3.1/30", intf="r3-eth2")
+    r3.setIP("10.0.3.1/30", intf="r3-eth0")    # FIX: r3-eth0, nu r3-eth2
     h3.setIP("10.0.3.2/30", intf="h3-eth0")
 
-    print("\n=== Topologia a fost pornită ===")
-    print("Configurațiile IP sunt setate.")
-    print("Studentul trebuie să adauge rute statice manual.")
-    print("Folosește 'r1 ip route', 'r2 ip route', etc.\n")
+    # ------------------------------
+    # Rute de baza pentru conectivitate h1 <-> h3
+    # ------------------------------
+
+    # Gateway-uri implicite pentru hosturi
+    h1.cmd("ip route add default via 10.0.1.1")
+    h3.cmd("ip route add default via 10.0.3.1")
+
+    # Rute statice pe routere, folosind direct link-ul r1 <-> r3
+    r1.cmd("ip route add 10.0.3.0/30 via 10.0.13.2")
+    r3.cmd("ip route add 10.0.1.0/30 via 10.0.13.1")
+
+    print("\n=== Topologia a fost pornita ===")
+    print("Configuratiile IP si rutele de baza sunt setate.")
+    print("Acum puteti testa direct: h1 ping 10.0.3.2")
 
     CLI(net)
     net.stop()
+
 
 
 if __name__ == '__main__':

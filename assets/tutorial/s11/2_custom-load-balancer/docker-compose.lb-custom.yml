@@ -2,9 +2,9 @@
 version: '3.9'
 
 services:
-  web1:
+  web1-lb:
     image: python:3.11-alpine
-    container_name: web1
+    container_name: web1-lb
     working_dir: /app
     volumes:
       - ./web1:/app
@@ -12,9 +12,9 @@ services:
     expose:
       - "8000"
 
-  web2:
+  web2-lb:
     image: python:3.11-alpine
-    container_name: web2
+    container_name: web2-lb
     working_dir: /app
     volumes:
       - ./web2:/app
@@ -22,9 +22,9 @@ services:
     expose:
       - "8000"
 
-  web3:
+  web3-lb:
     image: python:3.11-alpine
-    container_name: web3
+    container_name: web3-lb
     working_dir: /app
     volumes:
       - ./web3:/app
@@ -40,9 +40,9 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - web1
-      - web2
-      - web3
+      - web1-lb
+      - web2-lb
+      - web3-lb
 
 networks:
   default:

@@ -1,16 +1,16 @@
-### Sarcini: Topologia SDN cu Ryu si switch OpenFlow
+### Sarcini: Topologia SDN cu Os-ken si switch OpenFlow
 
 ---
 
-### 1. Pornirea controllerului Ryu
+### 1. Pornirea controllerului Os-ken
 
 Intr-un terminal separat (NU in Mininet), rulati:
 
 ```bash
-ryu-manager index_sdn_ryu_controller.py
+osken-manager index_sdn_os-keb_controller.py
 ````
 
-Ar trebui sa vedeti loguri Ryu si eventual un mesaj cand se conecteaza switch-ul.
+Ar trebui sa vedeti loguri os-ken si eventual un mesaj cand se conecteaza switch-ul.
 
 ---
 

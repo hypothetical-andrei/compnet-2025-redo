@@ -1,9 +1,9 @@
 ### Sarcini: Trafic TCP si UDP prin switch-ul SDN
 
-Aceste sarcini continua peste Stage 2 (controller Ryu + topologie SDN).
+Aceste sarcini continua peste Stage 2 (controller Os-ken + topologie SDN).
 
 Presupunem ca:
-- controllerul Ryu este pornit cu `index_sdn_ryu_controller.py`
+- controllerul Os-Ken este pornit cu `index_sdn_os-ken_controller.py`
 - topologia Mininet SDN este pornita cu `index_sdn_topo_switch.py`
 
 ---
@@ -42,7 +42,7 @@ h1 python3 tcp_client.py 10.0.10.3 5000
 2. Observati:
 
 * ar trebui sa vedeti `Connection failed` sau time-out
-* in log-ul Ryu, veti vedea mesaje despre drop pentru trafic catre 10.0.10.3
+* in log-ul Os-ken, veti vedea mesaje despre drop pentru trafic catre 10.0.10.3
 * in `ovs-ofctl dump-flows s1` ar trebui sa apara flow-ul de tip drop (instalat anterior)
 
 Salvati output-ul clientului in fisierul de deliverable.
@@ -72,9 +72,9 @@ h1 python3 udp_client.py 10.0.10.3 6000
 
 ---
 
-### 4. Modificare controller Ryu: permite UDP, blocheaza TCP spre h3
+### 4. Modificare controller Os-ken: permite UDP, blocheaza TCP spre h3
 
-In fisierul `index_sdn_ryu_controller.py`, in handler-ul `packet_in_handler`, modificati logica astfel incat:
+In fisierul `index_sdn_os-ken_controller.py`, in handler-ul `packet_in_handler`, modificati logica astfel incat:
 
 * pentru trafic TCP (ip_proto = 6) catre `10.0.10.3`:
 
@@ -107,9 +107,9 @@ actions = [parser.OFPActionOutput(3)]
 Dupa modificare, reporniti controllerul:
 
 ```bash
-# opriti vechiul Ryu
+# opriti vechiul Os-ken
 # apoi:
-ryu-manager index_sdn_ryu_controller.py
+osken-manager index_sdn_os-ken_controller.py
 ```
 
 Si reporniti reteaua Mininet daca era oprita.
@@ -186,7 +186,7 @@ Acesta trebuie sa contina:
 3. O explicatie de 8–10 propozitii in care descrieti:
 
    * diferenta dintre rutare clasica (triangle) si SDN
-   * cum influenteaza controllerul Ryu traficul TCP si UDP
+   * cum influenteaza controllerul Os-ken traficul TCP si UDP
    * cum se vede in flow table politica de securitate (blocare TCP, permitere UDP)
    * ce avantaje are SDN pentru astfel de politici fine (application-aware)
 

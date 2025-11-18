@@ -75,6 +75,10 @@ def run():
     # r1.setIP('2001:db8:10:1::1/64', intf='r1-eth0')
     # r1.setIP('2001:db8:10:2::1/64', intf='r1-eth1')
 
+    # Configuram rutele implicite pe hosturi
+    h1.cmd('ip route add default via 10.0.1.1')
+    h2.cmd('ip route add default via 10.0.2.1')
+
     print("Reteaua a fost pornita. Folositi CLI pentru configurari suplimentare.")
 
     CLI(net)

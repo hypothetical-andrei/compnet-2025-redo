@@ -4,10 +4,10 @@ Topologie Mininet pentru SDN:
              |
              +---- h3
 
-s1 este un Open vSwitch controlat de un controller Ryu extern.
+s1 este un Open vSwitch controlat de un controller os-ken extern.
 Hosturile au adrese in acelasi subnet 10.0.10.0/24.
 
-Studentul va porni separat controllerul Ryu si va testa ping-ul intre hosturi.
+Studentul va porni separat controllerul os-ken si va testa ping-ul intre hosturi.
 """
 
 from mininet.topo import Topo
@@ -41,7 +41,7 @@ class SDNSimpleTopo(Topo):
 
 def run():
     """
-    Creeaza reteaua, seteaza controllerul ca RemoteController (Ryu)
+    Creeaza reteaua, seteaza controllerul ca RemoteController (os-ken)
     si lanseaza CLI-ul Mininet.
 
     Controllerul trebuie pornit separat, inainte sau dupa pornirea retelei,
@@ -57,7 +57,7 @@ def run():
         autoSetMacs=True  # MAC-urile vor fi 00:00:00:00:00:01 etc.
     )
 
-    # Adaugam un controller extern (Ryu) pe 127.0.0.1:6633
+    # Adaugam un controller extern (Os-Ken) pe 127.0.0.1:6633
     c0 = net.addController(
         'c0',
         controller=RemoteController,
@@ -67,7 +67,7 @@ def run():
 
     net.start()
     info("\n=== Retea SDN pornita (h1, h2, h3, s1) ===\n")
-    info("Controllerul trebuie sa ruleze pe 127.0.0.1:6633 (Ryu).\n")
+    info("Controllerul trebuie sa ruleze pe 127.0.0.1:6633 (os-ken).\n")
     info("Incercati: h1 ping -c 3 10.0.10.2 si h1 ping -c 3 10.0.10.3\n\n")
 
     CLI(net)

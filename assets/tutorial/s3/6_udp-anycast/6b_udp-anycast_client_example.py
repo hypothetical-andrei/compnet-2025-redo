@@ -2,7 +2,7 @@ import socket
 
 # Pentru laborator, simulăm "anycast" folosind o adresă IPv6 locală.
 # În realitate, anycast presupune rutare specială în rețea.
-ANYCAST_ADDR = "2001:db8::1"  # exemplu din documentațiile IPv6 (prefix de test)
+ANYCAST_ADDR = "::1"  # loopback IPv6
 PORT = 5007
 
 

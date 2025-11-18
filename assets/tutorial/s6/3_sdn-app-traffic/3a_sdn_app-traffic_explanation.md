@@ -3,7 +3,7 @@
 In stage-urile anterioare am:
 
 - construit o topologie SDN simpla (h1, h2, h3 conectate la s1)
-- folosit un controller Ryu care permite traficul intre h1 si h2 si blocheaza traficul catre h3
+- folosit un controller Os-ken care permite traficul intre h1 si h2 si blocheaza traficul catre h3
 - testat comportamentul cu `ping`
 
 In acest stage vom trece la **trafic de aplicatie**:
@@ -57,7 +57,7 @@ Studentul trebuie sa:
 - porneasca serverul TCP pe h2 si sa testeze clientul TCP de pe h1 (merge)
 - incerce conexiune TCP de la h1 la h3 (nu merge)
 - porneasca serverul UDP pe h3
-- modifice controllerul Ryu astfel incat UDP de la h1 la h3 sa fie permis
+- modifice controllerul Os-ken astfel incat UDP de la h1 la h3 sa fie permis
 - testeze clientul UDP si sa confirme comportamentul diferit TCP vs UDP
 - salveze output-ul comenzilor intr-un fisier de tip log
 
