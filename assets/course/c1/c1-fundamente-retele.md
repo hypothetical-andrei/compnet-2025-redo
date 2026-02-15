@@ -28,7 +28,7 @@ La finalul cursului, studentul poate:
   - fizic: dispozitive + medii
   - logic: protocoale
 
-[FIG] c1-assets/fig-rețea-vs-sistem.png
+[FIG] assets/fig-rețea-vs-sistem.png
 
 ---
 
@@ -56,7 +56,7 @@ La finalul cursului, studentul poate:
 - Internet
   - interconectare globală de rețele WAN și LAN
 
-[FIG] c1-assets/fig-lan-wan-internet.png
+[FIG] assets/fig-lan-wan-internet.png
 
 ---
 
@@ -84,7 +84,7 @@ La finalul cursului, studentul poate:
 ---
 
 ### Topologii uzuale
-[FIG] c1-assets/fig-topologii.png
+[FIG] assets/fig-topologii.png
 
 ---
 
@@ -103,7 +103,7 @@ La finalul cursului, studentul poate:
 - Neghidate:
   - wireless (radio)
 
-[FIG] c1-assets/fig-medii.png
+[FIG] assets/fig-medii.png
 
 ---
 
@@ -113,7 +113,7 @@ La finalul cursului, studentul poate:
 - jitter: variația întârzierii
 - loss: pierderi de pachete
 
-[SCENARIO] c1-assets/scenario-ping-traceroute/
+[SCENARIO] assets/scenario-ping-traceroute/
 
 ---
 
@@ -127,7 +127,7 @@ La finalul cursului, studentul poate:
 - Comutare de circuit
 - Comutare de pachete
 
-[FIG] c1-assets/fig-circuit-vs-pachete.png
+[FIG] assets/fig-circuit-vs-pachete.png
 
 ---
 
@@ -138,7 +138,7 @@ La finalul cursului, studentul poate:
 - switch
 - router
 
-[FIG] c1-assets/fig-dispozitive.png
+[FIG] assets/fig-dispozitive.png
 
 ---
 
@@ -147,7 +147,7 @@ La finalul cursului, studentul poate:
 - switch: transmite selectiv
 - router: conectează rețele
 
-[FIG] c1-assets/fig-hub-switch-router.png
+[FIG] assets/fig-hub-switch-router.png
 
 ---
 
@@ -177,7 +177,7 @@ Notă: la nivel de programare, comunicarea este întotdeauna client-server
 - Fiecare nivel adaugă antet
 - Nivelurile inferioare nu interpretează payload-ul
 
-[FIG] c1-assets/fig-încapsulare.png
+[FIG] assets/fig-încapsulare.png
 
 ---
 
@@ -186,7 +186,7 @@ Notă: la nivel de programare, comunicarea este întotdeauna client-server
 - Ce vedem într-un ping
 - Ce vedem într-o interogare DNS
 
-[SCENARIO] c1-assets/scenario-capture-basics/
+[SCENARIO] assets/scenario-capture-basics/
 
 ---
 
