@@ -9,6 +9,7 @@ def main():
         print("No reply (timeout)")
     else:
         print("Reply from:", resp.src)
+        print(resp.summary())
 
 if __name__ == "__main__":
     main()

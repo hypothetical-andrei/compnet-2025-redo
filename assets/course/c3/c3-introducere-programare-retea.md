@@ -23,7 +23,7 @@ La finalul cursului, studentul poate:
 ---
 
 ### Abstractii peste nivelul aplicatie
-- Folosim un protocol de aplicatie existent ca “transport”
+- Folosim un protocol de aplicatie existent ca "transport"
 - Ignoram straturile de sub aplicatie
 - Exemplu: HTTP pentru acces la obiecte la distanta (REST), RPC
 
@@ -32,7 +32,7 @@ La finalul cursului, studentul poate:
 ---
 
 ### Programarea la nivel transport
-- Folosim TCP sau UDP ca “canal”
+- Folosim TCP sau UDP ca "canal"
 - Implementam servere care respecta un protocol de aplicatie (ex: HTTP minimal)
 - Sau definim protocoale custom
 
@@ -56,7 +56,7 @@ La baza: Berkeley sockets
 
 ### TCP: caracteristici
 - Orientat pe conexiune
-- Flux de bytes (nu “mesaje”)
+- Flux de bytes (nu "mesaje")
 - Livrare in ordine (in mod normal)
 - Control flux / retransmisii (la nivel TCP)
 - Problema aplicatiei: delimitarea mesajelor (framing)
@@ -69,11 +69,11 @@ La baza: Berkeley sockets
 ---
 
 ### TCP: problema 1 - framing (stream != message)
-- recv(1024) nu garanteaza ca primesti “un mesaj complet”
+- recv(1024) nu garanteaza ca primesti "un mesaj complet"
 - Solutii:
   - delimitator (ex: newline)
   - lungime prefixata (length prefix)
-  - format de tip TLV
+  - format de tip TLV (type-length-value)
 
 [SCENARIO] c3-assets/scenario-tcp-framing/
 
@@ -103,7 +103,7 @@ La baza: Berkeley sockets
 - Fara conexiune
 - Un mesaj = o datagrama (limite de marime)
 - Nu garanteaza livrare / ordine / unicitate
-- Serverul nu “accepta”, doar recvfrom/sendto
+- Serverul nu "accepta", doar recvfrom/sendto
 
 ---
 
@@ -113,7 +113,7 @@ La baza: Berkeley sockets
 ---
 
 ### UDP: probleme specifice
-- “Sesiuni” la nivel aplicatie (identificare client)
+- "Sesiuni" la nivel aplicatie (identificare client)
 - Confirmari (ACK) si retransmisii la nivel aplicatie
 - Comenzi multi-pas (stare)
 
@@ -122,7 +122,7 @@ La baza: Berkeley sockets
 ---
 
 ### RAW sockets (sub nivel transport)
-- Trimiti/primesti pachete “mai jos” decat TCP/UDP
+- Trimiti/primesti pachete "mai jos" decat TCP/UDP
 - Necesita privilegii (root/admin)
 - Folosit pentru instrumente (diagnostic), cercetare, implementari custom
 
