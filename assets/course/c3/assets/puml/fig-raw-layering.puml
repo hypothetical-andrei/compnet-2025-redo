@@ -1,0 +1,30 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+
+title RAW sockets in stiva (concept)
+
+rectangle "Aplicatie" as APP
+rectangle "Transport\n(TCP / UDP)" as L4
+rectangle "RAW socket\n(IP / ICMP direct)" as RAW
+rectangle "Retea\n(IP)" as L3
+rectangle "Acces la retea\n(Ethernet / Wi-Fi)" as L2
+rectangle "Mediu fizic" as L1
+
+APP -down-> L4
+L4 -down-> L3
+L3 -down-> L2
+L2 -down-> L1
+
+APP --> RAW : acces direct
+RAW --> L3 : ocoleste TCP/UDP
+
+note right of RAW
+  Necesita de obicei privilegii ridicate.
+  Util pentru diagnostic, cercetare,
+  implementari custom.
+end note
+@enduml

@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  ubuntu1:
+    build: .
+    container_name: ubuntu1
+    tty: true
+    stdin_open: true
+    networks:
+      labnet:
+        ipv4_address: 172.30.0.10
+
+  ubuntu2:
+    build: .
+    container_name: ubuntu2
+    tty: true
+    stdin_open: true
+    networks:
+      labnet:
+        ipv4_address: 172.30.0.11
+
+networks:
+  labnet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24

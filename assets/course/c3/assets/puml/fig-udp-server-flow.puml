@@ -1,0 +1,18 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+
+title Flux server UDP
+
+start
+:socket(AF_INET, SOCK_DGRAM);
+:bind(adresa, port);
+:recvfrom() -> (date, adresa client);
+:proceseaza datele;
+:sendto(raspuns, adresa client);
+:revino la recvfrom();
+stop
+@enduml

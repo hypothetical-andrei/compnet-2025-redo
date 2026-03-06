@@ -335,6 +335,12 @@ Exemple:
 
 ---
 
+### Scenariu programare de rețea
+
+[SCENARIO] assets/scenario-tcp-udp-layers/
+
+---
+
 ### Recapitulare
 - Rolul modelelor
 - Straturile OSI

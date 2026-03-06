@@ -1,0 +1,28 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+
+title Abstractie: aplicatie peste HTTP
+
+package "Client" {
+  rectangle "Aplicatie client" as AC
+  rectangle "HTTP client" as HC
+  AC -down-> HC
+}
+
+package "Server" {
+  rectangle "HTTP server" as HS
+  rectangle "Aplicatie server\n(logica)" as AS
+  HS -down-> AS
+}
+
+HC --> HS : HTTP request/response
+
+note bottom
+  Aplicatia foloseste HTTP ca mecanism de transport logic.
+  Straturile de sub aplicatie sunt ascunse de abstractie.
+end note
+@enduml

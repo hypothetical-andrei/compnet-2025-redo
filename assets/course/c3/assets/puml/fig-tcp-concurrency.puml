@@ -1,0 +1,26 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+
+title Concurenta TCP: un handler per client
+
+rectangle "Thread principal\naccept loop" as MAIN
+
+rectangle "Handler client A" as HA
+rectangle "Handler client B" as HB
+rectangle "Handler client C" as HC
+
+MAIN --> HA : accept + dispatch
+MAIN --> HB : accept + dispatch
+MAIN --> HC : accept + dispatch
+
+note bottom of MAIN
+  Variante uzuale:
+  - thread per client
+  - process per client
+  - async / event loop
+end note
+@enduml

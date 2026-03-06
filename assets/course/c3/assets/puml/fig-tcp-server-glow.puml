@@ -1,0 +1,19 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+
+title Flux server TCP (accept loop)
+
+start
+:socket(AF_INET, SOCK_STREAM);
+:bind(adresa, port);
+:listen();
+:accept() -> conexiune noua;
+:recv() / send() pe conexiune;
+:close(conexiune);
+:revino la accept() pentru urmatorul client;
+stop
+@enduml
