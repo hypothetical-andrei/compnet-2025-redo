@@ -19,7 +19,7 @@ La finalul cursului, studentul poate:
 - Fragmentarea datagramelor (unde e cazul) și reasamblarea la destinație
 - Rutarea pachetelor de la sursă la destinație
 
-[FIG] c5-assets/fig-l3-role.png
+[FIG] assets/images/fig-l3-role.png
 
 ---
 
@@ -35,7 +35,7 @@ La finalul cursului, studentul poate:
 - MAC (nivel 2): semnificație locală (într-un domeniu L2)
 - IP (nivel 3): semnificație ierarhică (rețea + host), rutabil global
 
-[FIG] c5-assets/fig-mac-vs-ip.png
+[FIG] assets/images/fig-mac-vs-ip.png
 
 ---
 
@@ -71,7 +71,7 @@ La finalul cursului, studentul poate:
 ---
 
 ### Format pachet IPv4 (câmpuri cheie)
-[FIG] c5-assets/fig-ipv4-header.png
+[FIG] assets/images/fig-ipv4-header.png
 
 ---
 
@@ -98,7 +98,7 @@ La finalul cursului, studentul poate:
 ---
 
 ### Format IPv6 (header fix + extensii)
-[FIG] c5-assets/fig-ipv6-header.png
+[FIG] assets/images/fig-ipv6-header.png
 
 ---
 
@@ -106,7 +106,7 @@ La finalul cursului, studentul poate:
 - Version: 6
 - Traffic Class + Flow Label
 - Payload Length
-- Next Header (analog “Protocol”, dar și extensii)
+- Next Header (analog "Protocol", dar și extensii)
 - Hop Limit (analog TTL)
 - Source/Destination: 128 biți
 
@@ -118,7 +118,7 @@ La finalul cursului, studentul poate:
   - partea de host
 - Masca/prefixul separă cele două părți
 
-[FIG] c5-assets/fig-prefix-mask.png
+[FIG] assets/images/fig-prefix-mask.png
 
 ---
 
@@ -158,10 +158,10 @@ Notă: în practică lucrăm cu CIDR, nu cu clase.
 ---
 
 ### Adrese speciale IPv4
-- 0.0.0.0 (default / “toate interfețele” în bind)
+- 0.0.0.0 (default / "toate interfețele" în bind)
 - 255.255.255.255 (broadcast limitat)
 - loopback: 127.0.0.0/8 (uzual 127.0.0.1)
-- link-local: 169.254.0.0/16
+- link-local: 169.254.0.0/16 (APIPA - Automatic Private IP Addressing)
 - private: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16
 
 ---
@@ -184,10 +184,30 @@ Notă: în practică lucrăm cu CIDR, nu cu clase.
 
 ---
 
+### Adrese speciale IPv6
+
+| Adresă | Prefix | Echivalent IPv4 |
+|---|---|---|
+| Loopback | `::1/128` | `127.0.0.1` |
+| Link-local | `fe80::/10` | `169.254.0.0/16` (APIPA) |
+| Unique local | `fc00::/7` (uzual `fd00::/8`) | `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16` |
+| Global unicast | `2000::/3` | adrese publice |
+| Multicast | `ff00::/8` | `224.0.0.0/4` |
+| Unspecified | `::/128` | `0.0.0.0` |
+| Default route | `::/0` | `0.0.0.0/0` |
+
+Note:
+- **Nu există broadcast** în IPv6 — înlocuit complet de multicast
+- **Link-local** (`fe80::`) este întotdeauna prezent pe interfață, nu e fallback ca APIPA
+- **Unique local** (`fd00::/8`) e analogul adreselor private, dar nu este rutabil pe Internet
+- Multicast are **scope inclus în adresă**: `ff02::` = link-local, `ff05::` = site-local etc.
+
+---
+
 ### Tipuri de comunicare IPv6
 - unicast
 - multicast
-- anycast (aceeași adresă pe mai multe noduri, ajunge la “cel mai apropiat”)
+- anycast (aceeași adresă pe mai multe noduri, ajunge la "cel mai apropiat")
 
 ---
 

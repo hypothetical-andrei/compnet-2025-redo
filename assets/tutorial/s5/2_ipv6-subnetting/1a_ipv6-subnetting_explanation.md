@@ -56,7 +56,7 @@ Regula generala:
 **Fiecare LAN IPv6 foloseste un prefix /64.**
 
 Motivatie:
-- protocolul SLAAC functioneaza doar cu /64  
+- protocolul SLAAC(Stateless Address Autoconfiguration) functioneaza doar cu /64  
 - interoperabilitate maxima  
 - simplificarea configuratiei de retea  
 - standardizarea suportului pentru echipamente

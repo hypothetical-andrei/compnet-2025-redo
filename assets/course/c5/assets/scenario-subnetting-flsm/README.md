@@ -5,4 +5,4 @@
 - rețea, broadcast, interval host pentru fiecare
 
 #### Rulare
-- python3 flsm_split.py 192.168.23.0/24 4
+- python3 flsm-split.py 192.168.23.0/24 4

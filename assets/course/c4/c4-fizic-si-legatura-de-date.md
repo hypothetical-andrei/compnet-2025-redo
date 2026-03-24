@@ -20,7 +20,7 @@ La finalul cursului, studentul poate:
 - Nivel fizic: semnal si biti
 - Nivel legatura: cadre, MAC, acces la mediu
 
-[FIG] c4-assets/fig-l1-l2-context.png
+[FIG] assets/images/fig-l1-l2-context.png
 
 ---
 
@@ -36,9 +36,9 @@ La finalul cursului, studentul poate:
   - cupru: coaxial, torsadat (UTP/STP)
   - fibra optica: single-mode, multi-mode
 - Neghidate:
-  - radio: WiFi, LTE, etc
+  - radio: WiFi, LTE (4G), etc
 
-[FIG] c4-assets/fig-transfer-media.png
+[FIG] assets/images/fig-transfer-media.png
 
 ---
 
@@ -46,36 +46,36 @@ La finalul cursului, studentul poate:
 - atenuare (scade amplitudinea)
 - zgomot (interferente)
 - latime de banda (Hz) vs bitrate (biti/s)
-- diafonie (cupru), reflexii (impedanta)
+- diafonie (crosstalk) pentru cupru, reflexii (signal reflections din schimbare de impedanta)
 - distanta maxima practica
 
 ---
 
 ### Codare pe linie (line coding): de ce?
 - vrem sincronizare si tranzitii
-- vrem sa evitam componenta DC prelungita
+- vrem sa evitam perioade lungi de timp cu un voltaj constant
 - vrem detectie de erori simple (uneori)
 - exemple: NRZ, NRZI, Manchester
 
-[FIG] c4-assets/fig-line-coding-overview.png
+[FIG] assets/images/fig-line-coding-overview.png
 
-[SCENARIO] c4-assets/scenario-line-coding/
+[SCENARIO] assets/scenario-line-coding/
 
 ---
 
-### NRZ (concept)
+### NRZ (Non Return to Zero)
 - 1 si 0 sunt nivele constante
 - problema: secvente lungi fara tranzitii -> sincronizare dificila
 
 ---
 
-### NRZI (concept)
+### NRZI (Non Return to Zero Inverted)
 - 1 produce tranzitie, 0 nu (sau invers, dupa conventie)
 - imbunatateste sincronizarea pentru anumite date
 
 ---
 
-### Manchester (concept)
+### Manchester encoding
 - tranzitie in mijlocul bitului
 - sincronizare buna, dar rata semnalului creste (cost in banda)
 
@@ -83,12 +83,12 @@ La finalul cursului, studentul poate:
 
 ### Modulatie (concept)
 - variem o purtatoare:
-  - ASK: amplitudine
-  - FSK: frecventa
-  - PSK: faza
-  - QAM: combinatie amplitudine + faza
+  - ASK (Amplitude Shift Keying): amplitudine
+  - FSK (Frequency Shift Keying): frecventa
+  - PSK (Phase Shift Keying): faza
+  - QAM (Quadrature Amplitude Modulation): combinatie amplitudine + faza
 
-[FIG] c4-assets/fig-modulation.png
+[FIG] assets/images/fig-modulation.png
 
 ---
 
@@ -114,7 +114,7 @@ La finalul cursului, studentul poate:
   - LLC (Logical Link Control): interfata spre software
   - MAC (Media Access Control): interfata spre hardware
 
-[FIG] c4-assets/fig-llc-mac.png
+[FIG] assets/images/fig-llc-mac.png
 
 ---
 
@@ -146,7 +146,7 @@ La finalul cursului, studentul poate:
 - impachetarea datelor in cadru (frame)
 - formatul depinde de tehnologie, dar campurile sunt similare
 
-[FIG] c4-assets/fig-l2-encapsulation.png
+[FIG] assets/images/fig-l2-encapsulation.png
 
 ---
 
@@ -167,7 +167,7 @@ La finalul cursului, studentul poate:
 ---
 
 ### Formatul cadrului Ethernet
-[FIG] c4-assets/fig-ethernet-frame.png
+[FIG] assets/images/fig-ethernet-frame.png
 
 ---
 
@@ -176,7 +176,7 @@ La finalul cursului, studentul poate:
 - broadcast local: FF:FF:FF:FF:FF:FF
 - adrese local-administered: bit specific setat in primul octet
 
-[SCENARIO] c4-assets/scenario-mac-arp-ethernet/
+[SCENARIO] assets/scenario-mac-arp-ethernet/
 
 ---
 
@@ -185,7 +185,7 @@ La finalul cursului, studentul poate:
 - CSMA/CD: asculta mediul, detecteaza coliziuni, backoff
 - in full-duplex cu switch: coliziunile dispar practic
 
-[FIG] c4-assets/fig-csma-cd.png
+[FIG] assets/images/fig-csma-cd.png
 
 ---
 
@@ -201,7 +201,7 @@ La finalul cursului, studentul poate:
 - benzi uzuale: 2.4 GHz, 5 GHz
 - canale: pot fi suprapuse sau ne-suprapuse
 
-[FIG] c4-assets/fig-wifi-channels-24ghz.png
+[FIG] assets/images/fig-wifi-channels-24ghz.png
 
 ---
 
@@ -218,7 +218,7 @@ La finalul cursului, studentul poate:
 - 4 adrese (in functie de scenariu)
 - FCS la final
 
-[FIG] c4-assets/fig-wifi-frame-concept.png
+[FIG] assets/images/fig-wifi-frame-concept.png
 
 ---
 
@@ -226,7 +226,7 @@ La finalul cursului, studentul poate:
 - coliziuni exista frecvent (mediul e partajat)
 - CSMA/CA: asculta, asteapta random, optional RTS/CTS, apoi asteapta confirmare
 
-[FIG] c4-assets/fig-csma-ca.png
+[FIG] assets/images/fig-csma-ca.png
 
 ---
 
@@ -259,7 +259,7 @@ La finalul cursului, studentul poate:
 - invata din sursa cadrelor
 - daca nu stie destinatia: flooding pe toate porturile
 
-[FIG] c4-assets/fig-switch-cam-learning.png
+[FIG] assets/images/fig-switch-cam-learning.png
 
 ---
 
@@ -274,7 +274,7 @@ La finalul cursului, studentul poate:
 - fiecare VLAN = domeniu de broadcast distinct
 - tagging (802.1Q) pe trunk
 
-[FIG] c4-assets/fig-vlan.png
+[FIG] assets/images/fig-vlan.png
 
 ---
 
