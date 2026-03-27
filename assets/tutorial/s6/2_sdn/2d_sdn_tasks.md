@@ -1,32 +1,32 @@
-### Sarcini: Topologia SDN cu Os-ken si switch OpenFlow
+# Sarcini: Topologia SDN cu Os-Ken și switch OpenFlow
 
 ---
 
-### 1. Pornirea controllerului Os-ken
+## 1. Pornirea controllerului Os-Ken
 
-Intr-un terminal separat (NU in Mininet), rulati:
+Într-un terminal separat (NU în Mininet), rulați:
 
 ```bash
-osken-manager index_sdn_os-keb_controller.py
-````
+osken-manager index_sdn_os-ken_controller.py
+```
 
-Ar trebui sa vedeti loguri os-ken si eventual un mesaj cand se conecteaza switch-ul.
+Ar trebui să vedeți loguri Os-Ken și eventual un mesaj când se conectează switch-ul.
 
 ---
 
-### 2. Pornirea topologiei Mininet SDN
+## 2. Pornirea topologiei Mininet SDN
 
-In alt terminal:
+În alt terminal:
 
 ```bash
 sudo python3 index_sdn_topo_switch.py
 ```
 
-Dupa pornire, veti intra in CLI-ul Mininet (`mininet>`).
+După pornire, veți intra în CLI-ul Mininet (`mininet>`).
 
-Verificati hosturile:
+Verificați hosturile:
 
-```bash
+```
 h1 ip a
 h2 ip a
 h3 ip a
@@ -34,80 +34,73 @@ h3 ip a
 
 ---
 
-### 3. Testarea conectivitatii cu ping
+## 3. Testarea conectivității cu ping
 
-#### a) h1 catre h2 (trebuie sa mearga)
+#### a) h1 către h2 (trebuie să meargă)
 
-```bash
+```
 h1 ping -c 3 10.0.10.2
 ```
 
-Ar trebui sa vedeti reply-uri si sa apara flow-uri noi in s1.
+Ar trebui să vedeți reply-uri și să apară flow-uri noi în s1.
 
-#### b) h1 catre h3 (trebuie sa fie blocat)
+#### b) h1 către h3 (trebuie să fie blocat)
 
-```bash
+```
 h1 ping -c 3 10.0.10.3
 ```
 
-Ar trebui sa vedeti timeout (no reply). Controllerul instaleaza un flow de tip drop.
+Ar trebui să vedeți timeout (no reply). Controllerul instalează un flow de tip drop.
 
 ---
 
-### 4. Inspectarea flow table-ului
+## 4. Inspectarea flow table-ului
 
-In CLI-ul Mininet:
+Comanda `ovs-ofctl` trebuie rulată **în afara CLI-ului Mininet**, într-un terminal separat de pe host:
 
 ```bash
-s1 ovs-ofctl dump-flows s1
+sudo ovs-ofctl dump-flows s1
 ```
 
-Analizati:
+Alternativ, din CLI-ul Mininet folosind socket-ul Unix al switch-ului:
 
-* exista flow-ul table-miss (prioritate 0)?
-* exista flow-uri pentru traficul 10.0.10.1 ↔ 10.0.10.2?
-* exista flow-uri de tip drop pentru destinatia 10.0.10.3?
+```
+s1 ovs-ofctl dump-flows unix:/var/run/openvswitch/s1.mgmt
+```
+
+Analizați:
+
+- există flow-ul table-miss (prioritate 0)?
+- există flow-uri pentru traficul 10.0.10.1 ↔ 10.0.10.2?
+- există flow-uri de tip drop pentru destinația 10.0.10.3?
 
 ---
 
-### 5. *Optional*: captura de trafic
+## 5. *Opțional*: captură de trafic
 
-Porniti o captura pe s1:
-
-```bash
-s1 tcpdump -i s1-eth1 -n
 ```
-
-Si in paralel:
-
-```bash
+s1 tcpdump -i s1-eth1 -n icmp > /tmp/s1.txt 2>&1 &
 h1 ping -c 3 10.0.10.2
+s1 pkill tcpdump
+s1 cat /tmp/s1.txt
 ```
 
-Observati pachetele ICMP. Opriti tcpdump cu Ctrl-C.
+Observați pachetele ICMP. Notați că pentru traficul blocat spre h3, pachetele nu apar pe interfață după ce flow-ul de drop a fost instalat.
 
 ---
 
-### Deliverable partial
+## Deliverable parțial
 
-Creati fisierul:
+Creați fișierul `sdn_stage2_output.txt` care să conțină:
 
-```
-sdn_stage2_output.txt
-```
+- output de la:
+  - `h1 ping -c 3 10.0.10.2`
+  - `h1 ping -c 3 10.0.10.3`
+- output complet de la `ovs-ofctl dump-flows s1`
+- 5–7 propoziții în care explicați:
+  - cum se vede în flow table faptul că traficul h1 ↔ h2 este permis
+  - cum se vede faptul că traficul către h3 este blocat
+  - ce rol are regula table-miss
+  - de ce h3 este izolat prin politică SDN și nu prin topologie fizică
 
-Acesta trebuie sa contina:
-
-* output de la:
-
-  * `h1 ping 10.0.10.2`
-  * `h1 ping 10.0.10.3`
-* un `ovs-ofctl dump-flows s1` (complet sau partial)
-* 5–7 propozitii in care explicati:
-
-  * cum se vede in flow table faptul ca traficul h1 ↔ h2 este permis
-  * cum se vede faptul ca traficul catre h3 este blocat
-  * ce rol are regula table-miss
-
-Acest fisier va fi completat in Stage 3 cu teste pe servere/cliente Python.
-
+Acest fișier va fi completat în Stage 3 cu teste pe servere/clienți Python.

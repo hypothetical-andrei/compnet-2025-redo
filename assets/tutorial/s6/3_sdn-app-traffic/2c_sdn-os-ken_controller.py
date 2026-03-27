@@ -276,12 +276,51 @@ class SimpleSwitch13(app_manager.OSKenApp):
         # Prioritatea 20 > 10, deci acest flow castiga fata de orice
         # regula de permitere care ar putea exista pentru acelasi pachet.
         # ============================================================
+        # OLD
+        # if dst_ip == "10.0.10.3":
+        #     match = parser.OFPMatch(
+        #         eth_type=0x0800,
+        #         ipv4_dst=dst_ip   # match doar pe destinatie, indiferent de sursa
+        #     )
+        #     actions = []  # lista goala = drop (nicio actiune = pachetul dispare)
+
+        #     self.add_flow(
+        #         datapath,
+        #         priority=20,
+        #         match=match,
+        #         actions=actions,
+        #         buffer_id=msg.buffer_id if msg.buffer_id != ofproto.OFP_NO_BUFFER else None
+        #     )
+
+        #     self.logger.info("Blocat: trafic catre %s (flow drop instalat)", dst_ip)
+        #     # Nu trimitem PacketOut — pachetul curent este si el dropp-uit.
+        #     return
+        # NEW
         if dst_ip == "10.0.10.3":
-            match = parser.OFPMatch(
-                eth_type=0x0800,
-                ipv4_dst=dst_ip   # match doar pe destinatie, indiferent de sursa
-            )
-            actions = []  # lista goala = drop (nicio actiune = pachetul dispare)
+            proto = ipv4_pkt.proto  # 6 = TCP, 17 = UDP
+
+            if proto == 6:
+                # TCP spre h3 -> drop
+                match = parser.OFPMatch(
+                    eth_type=0x0800,
+                    ip_proto=6,
+                    ipv4_dst=dst_ip
+                )
+                actions = []  # lista goala = drop
+                self.logger.info("Blocat TCP catre %s", dst_ip)
+
+            elif proto == 17:
+                # UDP spre h3 -> permis, trimitem pe portul 3 (h3)
+                match = parser.OFPMatch(
+                    eth_type=0x0800,
+                    ip_proto=17,
+                    ipv4_dst=dst_ip
+                )
+                actions = [parser.OFPActionOutput(3)]
+                self.logger.info("Permis UDP catre %s", dst_ip)
+
+            else:
+                return  # alt protocol, ignoram
 
             self.add_flow(
                 datapath,
@@ -290,10 +329,8 @@ class SimpleSwitch13(app_manager.OSKenApp):
                 actions=actions,
                 buffer_id=msg.buffer_id if msg.buffer_id != ofproto.OFP_NO_BUFFER else None
             )
-
-            self.logger.info("Blocat: trafic catre %s (flow drop instalat)", dst_ip)
-            # Nu trimitem PacketOut — pachetul curent este si el dropp-uit.
             return
+
 
         # ============================================================
         # CAZ IMPLICIT: niciun caz de mai sus nu s-a potrivit

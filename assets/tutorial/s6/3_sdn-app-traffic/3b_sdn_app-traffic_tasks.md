@@ -1,194 +1,201 @@
-### Sarcini: Trafic TCP si UDP prin switch-ul SDN
+# Sarcini: Trafic TCP și UDP prin switch-ul SDN
 
-Aceste sarcini continua peste Stage 2 (controller Os-ken + topologie SDN).
+Aceste sarcini continuă peste Stage 2 (controller Os-Ken + topologie SDN).
 
-Presupunem ca:
-- controllerul Os-Ken este pornit cu `index_sdn_os-ken_controller.py`
-- topologia Mininet SDN este pornita cu `index_sdn_topo_switch.py`
+Presupunem că:
+- controllerul Os-Ken este pornit cu `osken-manager index_sdn_os-ken_controller.py`
+- topologia Mininet SDN este pornită cu `sudo python3 index_sdn_topo_switch.py`
 
 ---
 
-### 1. Test TCP permis intre h1 si h2
+## 1. Test TCP permis între h1 și h2
 
-1. In CLI Mininet, porniti serverul TCP pe h2:
+Porniți serverul TCP pe h2 în background:
 
-```bash
-h2 python3 tcp_server.py 5000
-````
+```
+h2 python3 tcp_server.py 5000 &
+```
 
-2. In alt terminal Mininet (sau dupa ce deschideti un nou CLI cu `xterm h1`, daca il folositi), porniti clientul TCP pe h1:
+Porniți clientul TCP pe h1:
 
-```bash
+```
 h1 python3 tcp_client.py 10.0.10.2 5000
 ```
 
-3. Trimiteti cateva mesaje (ex: `hello`, `test`) si verificati ca:
+Trimiteți câteva mesaje (ex: `hello`, `test`) și verificați că serverul le afișează și clientul primește ecou.
 
-* serverul le afiseaza
-* clientul primeste eco
+Opriți clientul cu `exit`, apoi opriți serverul:
 
-4. Opriti clientul cu `exit`, apoi opriti serverul cu Ctrl-C.
+```
+h2 pkill -f tcp_server.py
+```
 
 ---
 
-### 2. Test TCP blocat intre h1 si h3
+## 2. Test TCP blocat între h1 și h3
 
-1. Din h1, incercati sa va conectati la h3 (fara sa rulati un server acolo, va fi oricum blocat de SDN):
+> ℹ️ Nu este nevoie de niciun server pe h3 — traficul este blocat de controller înainte să ajungă la destinație.
 
-```bash
+Încercați să vă conectați de pe h1 la h3:
+
+```
 h1 python3 tcp_client.py 10.0.10.3 5000
 ```
 
-2. Observati:
+Ar trebui să vedeți `Connection failed` sau timeout. Verificați în log-ul Os-Ken mesajele despre drop pentru trafic către 10.0.10.3, și inspectați flow table-ul:
 
-* ar trebui sa vedeti `Connection failed` sau time-out
-* in log-ul Os-ken, veti vedea mesaje despre drop pentru trafic catre 10.0.10.3
-* in `ovs-ofctl dump-flows s1` ar trebui sa apara flow-ul de tip drop (instalat anterior)
+```bash
+sudo ovs-ofctl dump-flows s1
+```
 
-Salvati output-ul clientului in fisierul de deliverable.
+Ar trebui să apară flow-ul de tip drop instalat de controller.
 
 ---
 
-### 3. Test UDP cu h3 (initial blocat la nivel IP)
+## 3. Test UDP spre h3 (blocat de flow-ul existent)
 
-1. Porniti serverul UDP pe h3:
+Porniți serverul UDP pe h3 în background:
 
-```bash
-h3 python3 udp_server.py 6000
+```
+h3 python3 udp_server.py 6000 &
 ```
 
-2. Din h1, porniti clientul UDP:
+Porniți clientul UDP pe h1:
 
-```bash
+```
 h1 python3 udp_client.py 10.0.10.3 6000
 ```
 
-3. Incearcati sa trimiteti cateva mesaje. In functie de implementarea controllerului:
+> ❌ Așteptat: mesajele nu ajung la server. Flow-ul de drop instalat în task 2 blochează orice trafic IP către 10.0.10.3, indiferent de protocol (TCP sau UDP).
 
-* daca aveti flow de drop general pe `dst_ip == 10.0.10.3`, este posibil sa nu ajunga nimic
-* daca nu aveti inca flow de drop pentru acest caz, mesajele pot trece
+Opriți serverul UDP:
 
-În etapa următoare vom modifica explicit controllerul pentru a controla separat TCP si UDP.
+```
+h3 pkill -f udp_server.py
+```
 
 ---
 
-### 4. Modificare controller Os-ken: permite UDP, blocheaza TCP spre h3
+## 4. Modificare controller Os-Ken: permite UDP, blochează TCP spre h3
 
-In fisierul `index_sdn_os-ken_controller.py`, in handler-ul `packet_in_handler`, modificati logica astfel incat:
-
-* pentru trafic TCP (ip_proto = 6) catre `10.0.10.3`:
-
-  * instalati un flow de tip drop (ca pana acum)
-* pentru trafic UDP (ip_proto = 17) catre `10.0.10.3`:
-
-  * instalati un flow care **permite** trimiterea catre portul h3
-
-Indicii:
-
-* obtineti protocolul din `ipv4_pkt.proto`
-* puteti folosi `parser.OFPMatch` astfel:
+În fișierul `index_sdn_os-ken_controller.py`, înlocuiți blocul care tratează `dst_ip == "10.0.10.3"` cu logică separată pe protocol:
 
 ```python
-match = parser.OFPMatch(
-    eth_type=0x0800,
-    ip_proto=17,         # UDP
-    ipv4_dst="10.0.10.3"
-)
+if dst_ip == "10.0.10.3":
+    proto = ipv4_pkt.proto  # 6 = TCP, 17 = UDP
+
+    if proto == 6:
+        # TCP spre h3 -> drop
+        match = parser.OFPMatch(
+            eth_type=0x0800,
+            ip_proto=6,
+            ipv4_dst=dst_ip
+        )
+        actions = []  # lista goala = drop
+        self.logger.info("Blocat TCP catre %s", dst_ip)
+
+    elif proto == 17:
+        # UDP spre h3 -> permis, trimitem pe portul 3 (h3)
+        match = parser.OFPMatch(
+            eth_type=0x0800,
+            ip_proto=17,
+            ipv4_dst=dst_ip
+        )
+        actions = [parser.OFPActionOutput(3)]
+        self.logger.info("Permis UDP catre %s", dst_ip)
+
+    else:
+        return  # alt protocol, ignoram
+
+    self.add_flow(
+        datapath,
+        priority=20,
+        match=match,
+        actions=actions,
+        buffer_id=msg.buffer_id if msg.buffer_id != ofproto.OFP_NO_BUFFER else None
+    )
+    return
 ```
 
-* pentru actiuni, folositi portul pe care este conectat h3 (de obicei 3):
-
-```python
-actions = [parser.OFPActionOutput(3)]
-```
-
-* pentru TCP, folositi `ip_proto=6` si actiuni goale (`actions = []`) pentru drop.
-
-Dupa modificare, reporniti controllerul:
+După modificare, reporniți controllerul (într-un terminal separat):
 
 ```bash
-# opriti vechiul Os-ken
-# apoi:
 osken-manager index_sdn_os-ken_controller.py
 ```
 
-Si reporniti reteaua Mininet daca era oprita.
+Și ștergeți flow-urile vechi din switch (altfel flow-ul de drop general pentru 10.0.10.3 rămâne activ):
+
+```bash
+sudo ovs-ofctl del-flows s1
+```
+
+> ⚠️ După `del-flows`, switch-ul nu mai are nicio regulă — inclusiv table-miss dispare. Controllerul o va reinstala automat când se reconectează, dar dacă nu o face imediat, reporniți și topologia Mininet.
 
 ---
 
-### 5. Retestare UDP si TCP
+## 5. Retestare UDP și TCP spre h3
 
-1. Cu serverul UDP pe h3:
+Porniți din nou serverul UDP pe h3:
 
-```bash
-h3 python3 udp_server.py 6000
+```
+h3 python3 udp_server.py 6000 &
 ```
 
-2. Cu clientul UDP pe h1:
+Testați clientul UDP de pe h1:
 
-```bash
+```
 h1 python3 udp_client.py 10.0.10.3 6000
 ```
 
-3. Trimiteti cateva mesaje:
+> ✅ Așteptat: mesajele ajung la server și primiți ecou — UDP este acum permis.
 
-* acum ar trebui sa vedeti mesaje afisate de server si raspunsurile eco la client
-* UDP ar trebui sa fie permis
+Testați clientul TCP de pe h1:
 
-4. Reincercati clientul TCP:
-
-```bash
+```
 h1 python3 tcp_client.py 10.0.10.3 5000
 ```
 
-* acesta trebuie sa fie in continuare blocat (drop la nivel SDN)
+> ❌ Așteptat: conexiunea eșuează — TCP spre h3 rămâne blocat.
+
+Opriți serverul UDP:
+
+```
+h3 pkill -f udp_server.py
+```
 
 ---
 
-### 6. Inspectarea flow-urilor dupa modificare
-
-Rulati:
+## 6. Inspectarea flow-urilor după modificare
 
 ```bash
-s1 ovs-ofctl dump-flows s1
+sudo ovs-ofctl dump-flows s1
 ```
 
-Cautati:
-
-* flow pentru UDP cu ip_proto=17, dst=10.0.10.3 si actiune output spre portul h3
-* flow pentru TCP cu ip_proto=6, dst=10.0.10.3 si actiuni goale (drop)
+Căutați:
+- flow cu `ip_proto=17, nw_dst=10.0.10.3` și acțiune `output:3` (UDP permis)
+- flow cu `ip_proto=6, nw_dst=10.0.10.3` și acțiuni goale (TCP drop)
 
 ---
 
-### Deliverable final SDN
+## Deliverable final SDN
 
-Combinati toate rezultatele din stage 2 si 3 intr-un singur fisier:
+Combinați toate rezultatele din Stage 2 și Stage 3 într-un singur fișier `sdn_lab_output.txt` care să conțină:
 
-```
-sdn_lab_output.txt
-```
+**Din Stage 2:**
+- ping h1 → h2 (reușit)
+- ping h1 → h3 (eșuat)
+- dump flow table inițial
 
-Acesta trebuie sa contina:
+**Din Stage 3:**
+- output client TCP h1 → h2 (reușit)
+- output client TCP h1 → h3 (eșuat)
+- output client UDP h1 → h3 (eșuat înainte de modificare, reușit după)
+- dump flow table după modificarea controllerului
 
-1. Output relevante din stage 2:
+**O explicație de 8–10 propoziții** în care descrieți:
+- diferența dintre rutare clasică (triangle) și SDN
+- cum influențează controllerul Os-Ken traficul TCP și UDP
+- cum se vede în flow table politica de securitate (blocare TCP, permitere UDP)
+- ce avantaje are SDN pentru astfel de politici fine (application-aware)
 
-   * ping h1 -> h2 (reusit)
-   * ping h1 -> h3 (esuat)
-   * un dump de flow table
-
-2. Output din stage 3:
-
-   * rularea clientului TCP h1 -> h2 (mesaje reusite)
-   * rularea clientului TCP h1 -> h3 (esuat)
-   * rularea clientului UDP h1 -> h3 (reusit dupa modificarea controllerului)
-   * un dump de flow table dupa modificare
-
-3. O explicatie de 8–10 propozitii in care descrieti:
-
-   * diferenta dintre rutare clasica (triangle) si SDN
-   * cum influenteaza controllerul Os-ken traficul TCP si UDP
-   * cum se vede in flow table politica de securitate (blocare TCP, permitere UDP)
-   * ce avantaje are SDN pentru astfel de politici fine (application-aware)
-
-Acest fisier va fi tema de predat pentru Seminarul 6.
-
+Acest fișier va fi tema de predat pentru Seminarul 6.
