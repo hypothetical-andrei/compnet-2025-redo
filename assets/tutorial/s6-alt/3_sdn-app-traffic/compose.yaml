@@ -1,0 +1,105 @@
+# compose.yaml  (Stage 3 — trafic de aplicație)
+#
+# Extinde topologia din Stage 2 cu:
+#   - montarea scripturilor Python în containerele h1, h2, h3
+#   - controllerul actualizat (UDP permis, TCP blocat spre h3)
+#
+# Restul infrastructurii (OVS, rețele, veth) este identic cu Stage 2.
+#
+# Utilizare:
+#   podman compose up -d
+#   podman exec -d h2 python3 /apps/tcp_server.py 5000
+#   podman exec -it h1 python3 /apps/tcp_client.py 10.0.10.2 5000
+#   podman exec -d h3 python3 /apps/udp_server.py 6000
+#   podman exec -it h1 python3 /apps/udp_client.py 10.0.10.3 6000
+#   podman compose down
+
+networks:
+  net_mgmt:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+
+services:
+
+  # ------------------------------------------------------------------ controller
+  # Folosește sdn_controller.py actualizat (NEW logic: UDP permis, TCP drop spre h3)
+  # Fișierul este montat ca volum — modificările sunt vizibile fără rebuild.
+  controller:
+    build:
+      context: ./controller
+      dockerfile: Dockerfile
+    container_name: controller
+    hostname: controller
+    networks:
+      net_mgmt:
+        ipv4_address: 172.20.0.10
+    volumes:
+      - ./controller/sdn_controller.py:/app/sdn_controller.py:ro
+    expose:
+      - "6633"
+
+  # ------------------------------------------------------------------ s1 (OVS)
+  s1:
+    build:
+      context: .
+      dockerfile: Dockerfile.s1
+    container_name: s1
+    hostname: s1
+    privileged: true
+    networks:
+      net_mgmt:
+        ipv4_address: 172.20.0.20
+    volumes:
+      - ./scripts/init-s1.sh:/init-s1.sh:ro
+      - /run/user/${UID}/podman/podman.sock:/run/podman/podman.sock:ro
+    command: ["/bin/bash", "/init-s1.sh"]
+    depends_on:
+      - controller
+      - h1
+      - h2
+      - h3
+
+  # ------------------------------------------------------------------ h1
+  # Montăm scripturile Python în /apps
+  h1:
+    image: nicolaka/netshoot
+    container_name: h1
+    hostname: h1
+    command: ["sleep", "infinity"]
+    networks:
+      net_mgmt:
+        ipv4_address: 172.20.0.31
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./apps:/apps:ro
+
+  # ------------------------------------------------------------------ h2
+  h2:
+    image: nicolaka/netshoot
+    container_name: h2
+    hostname: h2
+    command: ["sleep", "infinity"]
+    networks:
+      net_mgmt:
+        ipv4_address: 172.20.0.32
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./apps:/apps:ro
+
+  # ------------------------------------------------------------------ h3
+  h3:
+    image: nicolaka/netshoot
+    container_name: h3
+    hostname: h3
+    command: ["sleep", "infinity"]
+    networks:
+      net_mgmt:
+        ipv4_address: 172.20.0.33
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./apps:/apps:ro

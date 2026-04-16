@@ -1,0 +1,119 @@
+# compose.yaml
+#
+# Topologie SDN cu Podman Compose:
+#
+#   h1 ---- s1 (OVS) ---- h2
+#              |
+#             h3
+#
+#   [controller Os-Ken] <--TCP 6633--> [s1 OVS]
+#
+# CERINȚĂ PRE-LANSARE:
+#   lsmod | grep openvswitch || sudo modprobe openvswitch
+#
+# Utilizare:
+#   podman compose up -d
+#   podman logs -f s1          # urmăriți inițializarea OVS
+#   podman logs -f controller  # urmăriți conexiunea OpenFlow
+#   podman exec -it h1 bash
+#   podman compose down
+
+networks:
+
+  # Rețea de management: toate containerele sunt conectate aici.
+  # OVS folosește această rețea pentru a vorbi cu controllerul (TCP 6633).
+  # h1/h2/h3 au eth0 pe această rețea (pentru podman exec), dar NU
+  # trimitem trafic de date pe ea.
+  net_mgmt:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+
+services:
+
+  # ------------------------------------------------------------------ controller
+  # Containerul Os-Ken. Ascultă pe portul 6633 pentru conexiuni OpenFlow
+  # din partea switch-ului OVS.
+  controller:
+    build:
+      context: ./controller
+      dockerfile: Dockerfile
+    container_name: controller
+    hostname: controller
+    networks:
+      net_mgmt:
+        ipv4_address: 172.20.0.10
+    volumes:
+      # Montăm aplicația controller direct (nu e nevoie de rebuild la modificări)
+      - ./controller/sdn_controller.py:/app/sdn_controller.py:ro
+    # Os-Ken ascultă pe 6633 implicit
+    expose:
+      - "6633"
+
+  # ------------------------------------------------------------------ s1 (OVS)
+  # Containerul Open vSwitch. Rulează ca privilegiat pentru acces la
+  # modulele kernel openvswitch. Scriptul init-s1.sh:
+  #   - pornește ovsdb-server și ovs-vswitchd
+  #   - creează bridge-ul br0 conectat la controller:6633
+  #   - creează perechi veth pentru h1, h2, h3 și le adaugă la br0
+  s1:
+    build:
+      context: .
+      dockerfile: Dockerfile.s1
+    container_name: s1
+    hostname: s1
+    # Privilegiat: necesar pentru manipularea namespace-urilor de rețea
+    # și pentru accesul la modulele kernel OVS
+    privileged: true
+    networks:
+      net_mgmt:
+        ipv4_address: 172.20.0.20
+    volumes:
+      - ./scripts/init-s1.sh:/init-s1.sh:ro
+      # Socket-ul Podman: permite scriptului să inspecteze PID-urile containerelor
+      # pentru a muta interfețele veth în namespace-urile lor
+      - /run/user/${UID}/podman/podman.sock:/run/podman/podman.sock:ro
+    command: ["/bin/bash", "/init-s1.sh"]
+    # s1 pornește după controller (dar conexiunea OpenFlow se face async)
+    depends_on:
+      - controller
+      - h1
+      - h2
+      - h3
+
+  # ------------------------------------------------------------------ h1
+  h1:
+    image: nicolaka/netshoot
+    container_name: h1
+    hostname: h1
+    command: ["sleep", "infinity"]
+    networks:
+      net_mgmt:
+        ipv4_address: 172.20.0.31
+    cap_add:
+      - NET_ADMIN
+
+  # ------------------------------------------------------------------ h2
+  h2:
+    image: nicolaka/netshoot
+    container_name: h2
+    hostname: h2
+    command: ["sleep", "infinity"]
+    networks:
+      net_mgmt:
+        ipv4_address: 172.20.0.32
+    cap_add:
+      - NET_ADMIN
+
+  # ------------------------------------------------------------------ h3
+  h3:
+    image: nicolaka/netshoot
+    container_name: h3
+    hostname: h3
+    command: ["sleep", "infinity"]
+    networks:
+      net_mgmt:
+        ipv4_address: 172.20.0.33
+    cap_add:
+      - NET_ADMIN

@@ -1,0 +1,18 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Instalăm Open vSwitch și utilitarele necesare
+RUN apt-get update && apt-get install -y \
+    openvswitch-switch \
+    openvswitch-common \
+    iproute2 \
+    iputils-ping \
+    procps \
+    && rm -rf /var/lib/apt/lists/*
+
+# Podman socket va fi montat la /run/podman/podman.sock
+# pentru ca scriptul să poată inspecta containerele vecine
+RUN mkdir -p /var/run/openvswitch /var/log/openvswitch /etc/openvswitch
+
+CMD ["/bin/bash"]

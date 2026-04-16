@@ -1,0 +1,142 @@
+# compose.yaml
+#
+# Topologie Podman Compose: Triunghi de 3 routere + 2 hosturi
+#
+#   h1
+#    |
+#   r1 ----- r2
+#    \       /
+#     \     /
+#       r3
+#       |
+#       h3
+#
+# Fiecare legătură punct-la-punct este modelată ca un bridge cu câte 2 containere.
+# Adresele IP și rutele inițiale sunt configurate de scripturile din ./scripts/.
+#
+# Utilizare:
+#   podman compose up -d
+#   podman exec -it r1 bash
+#   podman exec -it h1 bash
+#   podman compose down
+
+networks:
+
+  # h1 <-> r1  (10.0.1.0/30)
+  net_h1_r1:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.1.0/30
+
+  # r1 <-> r2  (10.0.12.0/30)
+  net_r1_r2:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.12.0/30
+
+  # r2 <-> r3  (10.0.23.0/30)
+  net_r2_r3:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.23.0/30
+
+  # r1 <-> r3  (10.0.13.0/30)
+  net_r1_r3:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.13.0/30
+
+  # r3 <-> h3  (10.0.3.0/30)
+  net_r3_h3:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.3.0/30
+
+services:
+
+  # ------------------------------------------------------------------ h1
+  h1:
+    image: nicolaka/netshoot
+    container_name: h1
+    hostname: h1
+    command: ["/bin/sh", "/scripts/init-h1.sh"]
+    networks:
+      - net_h1_r1
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./scripts:/scripts:ro
+
+  # ------------------------------------------------------------------ h3
+  h3:
+    image: nicolaka/netshoot
+    container_name: h3
+    hostname: h3
+    command: ["/bin/sh", "/scripts/init-h3.sh"]
+    networks:
+      - net_r3_h3
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./scripts:/scripts:ro
+
+  # ------------------------------------------------------------------ r1
+  # Conectat la: net_h1_r1, net_r1_r2, net_r1_r3
+  # Rută inițială: 10.0.3.0/30 via 10.0.13.2 (direct prin r3)
+  r1:
+    image: nicolaka/netshoot
+    container_name: r1
+    hostname: r1
+    command: ["/bin/sh", "/scripts/init-r1.sh"]
+    networks:
+      - net_h1_r1
+      - net_r1_r2
+      - net_r1_r3
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv4.ip_forward: 1
+    volumes:
+      - ./scripts:/scripts:ro
+
+  # ------------------------------------------------------------------ r2
+  # Conectat la: net_r1_r2, net_r2_r3
+  # Izolat la pornire: fără rute spre h1 sau h3
+  r2:
+    image: nicolaka/netshoot
+    container_name: r2
+    hostname: r2
+    command: ["/bin/sh", "/scripts/init-r2.sh"]
+    networks:
+      - net_r1_r2
+      - net_r2_r3
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv4.ip_forward: 1
+    volumes:
+      - ./scripts:/scripts:ro
+
+  # ------------------------------------------------------------------ r3
+  # Conectat la: net_r2_r3, net_r1_r3, net_r3_h3
+  # Rută inițială: 10.0.1.0/30 via 10.0.13.1 (direct prin r1)
+  r3:
+    image: nicolaka/netshoot
+    container_name: r3
+    hostname: r3
+    command: ["/bin/sh", "/scripts/init-r3.sh"]
+    networks:
+      - net_r2_r3
+      - net_r1_r3
+      - net_r3_h3
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv4.ip_forward: 1
+    volumes:
+      - ./scripts:/scripts:ro

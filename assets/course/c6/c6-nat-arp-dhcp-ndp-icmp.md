@@ -23,7 +23,7 @@ La finalul cursului, studentul poate:
   - suport pentru diagnostic și control (ICMP)
   - compatibilitate cu lipsa adreselor IPv4 (NAT/PAT)
 
-[FIG] c6-assets/fig-l3-support-map.png
+[FIG] assets/images/fig-l3-support-map.png
 
 ---
 
@@ -49,7 +49,7 @@ Notă: nu sunt rutabile global; trebuie traduse/încapsulate pentru Internet.
 - NAT: modifică adresa sursă și/sau destinație
 - Necesită mapare bidirecțională pentru a primi răspuns
 
-[FIG] c6-assets/fig-nat-basic.png
+[FIG] assets/images/fig-nat-basic.png
 
 ---
 
@@ -72,7 +72,7 @@ Notă: nu sunt rutabile global; trebuie traduse/încapsulate pentru Internet.
 - Problemă: server intern privat trebuie accesibil din exterior
 - Soluție: mapare fixă între IP privat și IP public
 
-[FIG] c6-assets/fig-nat-static.png
+[FIG] assets/images/fig-nat-static.png
 
 ---
 
@@ -80,7 +80,7 @@ Notă: nu sunt rutabile global; trebuie traduse/încapsulate pentru Internet.
 - Problemă: multe stații, puține IP-uri publice
 - Soluție: pool de IP-uri publice alocate temporar (lease pe mapare)
 
-[FIG] c6-assets/fig-nat-dynamic.png
+[FIG] assets/images/fig-nat-dynamic.png
 
 ---
 
@@ -92,9 +92,9 @@ Exemplu tabelă:
 - 192.168.0.1:80 -> 166.14.133.3:62101
 - 192.168.0.2:80 -> 166.14.133.3:63105
 
-[FIG] c6-assets/fig-pat.png
+[FIG] assets/images/fig-pat.png
 
-[SCENARIO] c6-assets/scenario-nat-linux/
+[SCENARIO] assets/scenario-nat-linux/
 
 ---
 
@@ -113,9 +113,9 @@ Exemplu tabelă:
 - ARP request: broadcast
 - ARP reply: unicast
 
-[FIG] c6-assets/fig-arp.png
+[FIG] assets/images/fig-arp.png
 
-[SCENARIO] c6-assets/scenario-arp-capture/
+[SCENARIO] assets/scenario-arp-capture/
 
 ---
 
@@ -123,7 +123,7 @@ Exemplu tabelă:
 - Dacă IP-ul căutat e în altă rețea
 - Ruterul poate răspunde cu MAC-ul lui (în locul destinației reale)
 
-[FIG] c6-assets/fig-proxy-arp.png
+[FIG] assets/images/fig-proxy-arp.png
 
 ---
 
@@ -141,9 +141,9 @@ Exemplu tabelă:
   - DNS
   - lease time
 
-[FIG] c6-assets/fig-dhcp-dora.png
+[FIG] assets/images/fig-dhcp-dora.png
 
-[SCENARIO] c6-assets/scenario-dhcp-capture/
+[SCENARIO] assets/scenario-dhcp-capture/
 
 ---
 
@@ -159,7 +159,7 @@ Exemplu tabelă:
 - Discover e broadcast (nu trece prin rutare)
 - Relay pe ruter: transformă cererea și o trimite către serverul DHCP din altă rețea
 
-[FIG] c6-assets/fig-dhcp-relay.png
+[FIG] assets/images/fig-dhcp-relay.png
 
 ---
 
@@ -171,15 +171,37 @@ Exemplu tabelă:
   - DAD (duplicate address detection)
 - Folosește ICMPv6
 
-[FIG] c6-assets/fig-ndp.png
+[FIG] assets/images/fig-ndp.png
 
-[SCENARIO] c6-assets/scenario-ndp-capture/
+[SCENARIO] assets/scenario-ndp-capture/
 
 ---
 
 ### Neighbor Solicitation / Advertisement
-- NS: solicitare către multicast (în loc de broadcast)
-- NA: răspuns (sau anunț nesolicitat)
+- NS: solicitare către multicast solicitat-node (în loc de broadcast ca ARP)
+- NA: răspuns unicast direct către solicitant (sau anunț nesolicitat)
+
+Pași:
+1. Host A trimite NS → multicast: "Cine are adresa IPv6 X? Eu sunt A (MAC aa:bb…)"
+2. Doar nodul cu adresa X procesează NS-ul
+3. Nodul X trimite NA → unicast către A: "Eu am adresa X, MAC-ul meu e cc:dd…"
+4. Host A actualizează cache-ul de vecini (IPv6 → MAC)
+
+[FIG] assets/images/fig-ndp-ns-na.png
+
+---
+
+### NDP: descoperire router (RS/RA)
+- RS (Router Solicitation): trimis de hostul nou pe all-routers multicast — opțional
+- RA (Router Advertisement): trimis de router periodic și ca răspuns la RS
+
+Pași:
+1. Host nou trimite RS → all-routers multicast: "Există vreun router pe link?" (opțional)
+2. Routerul aude RS (sau trimite RA periodic, nesolicitat)
+3. Routerul trimite RA → all-nodes multicast: prefix, MTU, hop limit, flag M/O, lifetime
+4. Hostul procesează RA: reține routerul ca default gateway + prefix pentru SLAAC
+
+[FIG] assets/images/fig-ndp-rs-ra.png
 
 ---
 
@@ -191,6 +213,16 @@ Exemplu tabelă:
 - Stateful:
   - DHCPv6 pentru parametri suplimentari (DNS etc), uneori și pentru adresă
 
+Pași SLAAC + DAD:
+1. Host generează adresă link-local tentativă: fe80::/10 + interface ID (EUI-64 sau random)
+2. DAD: trimite NS pentru propria adresă tentativă → dacă cineva răspunde = conflict
+3. Fără conflict → link-local confirmată și activată
+4. Host primește RA cu prefix global (ex: 2001:db8:1::/64) → construiește adresă globală
+5. DAD repetat pentru adresa globală
+6. Adresă globală activă — host complet configurat fără server DHCP
+
+[FIG] assets/images/fig-ndp-slaac-dad.png
+
 ---
 
 ### ICMP: de ce există
@@ -198,16 +230,17 @@ Exemplu tabelă:
 - ICMP:
   - mesaje de control și eroare
   - ping / traceroute (instrumente construite peste ICMP)
+- Nu se trimit mesaje ICMP pentru erori de ICMP
 
-[FIG] c6-assets/fig-icmp-role.png
+[FIG] assets/images/fig-icmp-role.png
 
-[SCENARIO] c6-assets/scenario-icmp-traceroute/
+[SCENARIO] assets/scenario-icmp-traceroute/
 
 ---
 
 ### ICMPv6
 - rol similar ICMP
-- utilizat intens de NDP (de aceea filtrarea ICMPv6 “la grămadă” rupe IPv6)
+- utilizat intens de NDP (de aceea filtrarea ICMPv6 "la grămadă" împiedică funcționarea IPv6)
 
 ---
 
@@ -221,4 +254,4 @@ Exemplu tabelă:
 ---
 
 ### Pregătire pentru Curs 7
-- Rutare: RIP, OSPF (și ce înseamnă “tabele de rutare” în practică)
+- Rutare: RIP, OSPF (și ce înseamnă "tabele de rutare" în practică)

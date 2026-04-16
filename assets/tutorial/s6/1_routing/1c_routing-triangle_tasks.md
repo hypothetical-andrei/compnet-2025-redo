@@ -112,7 +112,7 @@ h1 traceroute 10.0.3.2
 ### Pasul 3 — Confirmați că r2 vede trafic
 
 ```
-r2 tcpdump -i r2-eth0 -n icmp
+r2 tcpdump -i r2-eth0 -n icmp > /tmp/s1.txt 2>&1 &
 ```
 
 Rulați ping-ul din nou și confirmați că pachetele trec acum prin r2.
