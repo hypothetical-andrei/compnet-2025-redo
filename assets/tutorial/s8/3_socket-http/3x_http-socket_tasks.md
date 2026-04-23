@@ -42,9 +42,9 @@ Executați:
 
 ```
 
-curl -v [http://localhost:8000/](http://localhost:8000/)
-curl -v [http://localhost:8000/index.html](http://localhost:8000/index.html)
-curl -v [http://localhost:8000/doesnotexist](http://localhost:8000/doesnotexist)
+curl -v http://localhost:8000/
+curl -v http://localhost:8000/index.html
+curl -v http://localhost:8000/doesnotexist
 
 ```
 

@@ -10,6 +10,7 @@ def main():
     s.listen(1)
 
     conn, _ = s.accept()
+    s.close()          # stop listening; we only expect one sender
 
     buf = b""
     lines = 0
@@ -23,7 +24,9 @@ def main():
             lines += 1
 
     conn.close()
-    print(f"[tcp_receiver] received lines: {lines}")
+    expected = 200
+    status = "OK - stream complete" if lines == expected else f"INCOMPLETE - got {lines}/{expected}"
+    print(f"[tcp_receiver] received lines: {lines}/{expected}  ({status})")
 
 if __name__ == "__main__":
     main()

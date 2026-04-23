@@ -30,11 +30,11 @@ r1 ----- r2
 
 | Rețea Podman   | Subnet         | Noduri conectate |
 |----------------|----------------|------------------|
-| `net_h1_r1`    | 10.0.1.0/30    | h1, r1           |
-| `net_r1_r2`    | 10.0.12.0/30   | r1, r2           |
-| `net_r2_r3`    | 10.0.23.0/30   | r2, r3           |
-| `net_r1_r3`    | 10.0.13.0/30   | r1, r3           |
-| `net_r3_h3`    | 10.0.3.0/30    | r3, h3           |
+| `net_h1_r1`    | 10.0.1.0/29    | h1, r1           |
+| `net_r1_r2`    | 10.0.12.0/29   | r1, r2           |
+| `net_r2_r3`    | 10.0.23.0/29   | r2, r3           |
+| `net_r1_r3`    | 10.0.13.0/29   | r1, r3           |
+| `net_r3_h3`    | 10.0.3.0/29    | r3, h3           |
 
 Fiecare rețea apare ca o interfață separată în containerele conectate la ea.
 
@@ -44,11 +44,11 @@ Fiecare rețea apare ca o interfață separată în containerele conectate la ea
 
 | Legătură   | Subnet        | IP stânga          | IP dreapta         |
 |------------|---------------|--------------------|--------------------|
-| h1 ↔ r1    | 10.0.1.0/30   | h1: 10.0.1.2       | r1: 10.0.1.1       |
-| r1 ↔ r2    | 10.0.12.0/30  | r1: 10.0.12.1      | r2: 10.0.12.2      |
-| r2 ↔ r3    | 10.0.23.0/30  | r2: 10.0.23.1      | r3: 10.0.23.2      |
-| r1 ↔ r3    | 10.0.13.0/30  | r1: 10.0.13.1      | r3: 10.0.13.2      |
-| r3 ↔ h3    | 10.0.3.0/30   | r3: 10.0.3.1       | h3: 10.0.3.2       |
+| h1 ↔ r1    | 10.0.1.0/29   | h1: 10.0.1.2       | r1: 10.0.1.1       |
+| r1 ↔ r2    | 10.0.12.0/29  | r1: 10.0.12.1      | r2: 10.0.12.2      |
+| r2 ↔ r3    | 10.0.23.0/29  | r2: 10.0.23.1      | r3: 10.0.23.2      |
+| r1 ↔ r3    | 10.0.13.0/29  | r1: 10.0.13.1      | r3: 10.0.13.2      |
+| r3 ↔ h3    | 10.0.3.0/29   | r3: 10.0.3.1       | h3: 10.0.3.2       |
 
 ---
 
@@ -61,8 +61,8 @@ La pornire, sunt pre-configurate rutele pentru calea **h1 → r1 → r3 → h3**
 |-----|----------------|-------------------|
 | h1  | default        | 10.0.1.1 (r1)     |
 | h3  | default        | 10.0.3.1 (r3)     |
-| r1  | 10.0.3.0/30    | 10.0.13.2 (r3)    |
-| r3  | 10.0.1.0/30    | 10.0.13.1 (r1)    |
+| r1  | 10.0.3.0/29    | 10.0.13.2 (r3)    |
+| r3  | 10.0.1.0/29    | 10.0.13.1 (r1)    |
 
 Legătura r1–r2–r3 există fizic (rețelele sunt active), dar traficul nu o traversează.
 
@@ -97,14 +97,14 @@ Scripturile se află în directorul `scripts/` și sunt montate ca volume read-o
 
 ```bash
 # Pornire
-podman compose up -d
+podman-compose -f 1b_podman-compose.yaml up -d
 
 # Accesarea unui nod
 podman exec -it r1 bash
 podman exec -it h1 bash
 
 # Oprire și curățare
-podman compose down
+podman-compose -f 1b_podman-compose.yaml down
 ```
 
 ---

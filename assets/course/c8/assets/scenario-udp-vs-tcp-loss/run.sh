@@ -6,7 +6,7 @@ cd "$HERE"
 
 LOSS="${1:-20}"
 
-echo "[run] starting mininet scenario with loss=${LOSS}% (requires sudo)"
+echo "[run] starting Mininet scenario with loss=${LOSS}% (requires sudo)"
 
 sudo python3 - <<PY
 import time
@@ -30,19 +30,34 @@ net.addLink(s1, h2, loss=loss)
 
 net.start()
 
-print("[run] UDP test")
+def wait_for_output(host, outfile, sentinel, timeout=60):
+    """Poll outfile on host until sentinel string appears or timeout expires."""
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        out = host.cmd(f"cat {outfile} 2>/dev/null")
+        if sentinel in out:
+            return out.strip()
+        time.sleep(0.3)
+    return host.cmd(f"cat {outfile} 2>/dev/null").strip() + "\n[WARN] timed out waiting for receiver"
+
+# ── UDP test ─────────────────────────────────────────────────────────────────
+print("[run] UDP test  (best-effort — losses expected)")
 h2.cmd("python3 udp_receiver.py > udp_receiver.out 2>&1 &")
 time.sleep(0.2)
 h1.cmd("python3 udp_sender.py > udp_sender.out 2>&1")
-time.sleep(6.0)
-print(h2.cmd("cat udp_receiver.out").strip())
+# UDP receiver has a built-in 5 s idle timeout; poll until it prints its summary.
+out = wait_for_output(h2, "udp_receiver.out", "[udp_receiver]", timeout=15)
+print(out)
 
-print("\\n[run] TCP test")
+# ── TCP test ──────────────────────────────────────────────────────────────────
+print("\\n[run] TCP test  (reliable stream — no losses expected)")
 h2.cmd("python3 tcp_receiver.py > tcp_receiver.out 2>&1 &")
 time.sleep(0.2)
 h1.cmd("python3 tcp_sender.py > tcp_sender.out 2>&1")
-time.sleep(0.5)
-print(h2.cmd("cat tcp_receiver.out").strip())
+# The sender closes the connection when done; the receiver drains, then prints.
+# On a 20%-loss link, TCP retransmissions can add 10-30 s — poll instead of sleeping.
+out = wait_for_output(h2, "tcp_receiver.out", "[tcp_receiver]", timeout=60)
+print(out)
 
 net.stop()
 PY

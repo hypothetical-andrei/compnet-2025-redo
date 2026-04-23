@@ -270,13 +270,32 @@ class SimpleSwitch13(app_manager.OSKenApp):
             return
 
         # ============================================================
-        # POLITICA SDN — CAZ B: destinatia este h3
-        # Diferențiem după protocol:
-        #   TCP  → drop  (prioritate 20, actions=[])
-        #   UDP  → permis pe portul 3 (h3)  (prioritate 20, actions=[output:3])
-        # Prioritatea 20 > 10, deci aceste flow-uri câștigă față de orice
-        # regulă de permitere generică pentru același pachet.
+        # POLITICA SDN — CAZ B: destinatia este h3 => BLOCAT (drop)
+        # Instalam un flow cu prioritatea 20 si actions=[] (lista goala).
+        # O lista goala de actiuni inseamna drop — pachetul este aruncat.
+        # Prioritatea 20 > 10, deci acest flow castiga fata de orice
+        # regula de permitere care ar putea exista pentru acelasi pachet.
         # ============================================================
+        # OLD
+        # if dst_ip == "10.0.10.3":
+        #     match = parser.OFPMatch(
+        #         eth_type=0x0800,
+        #         ipv4_dst=dst_ip   # match doar pe destinatie, indiferent de sursa
+        #     )
+        #     actions = []  # lista goala = drop (nicio actiune = pachetul dispare)
+
+        #     self.add_flow(
+        #         datapath,
+        #         priority=20,
+        #         match=match,
+        #         actions=actions,
+        #         buffer_id=msg.buffer_id if msg.buffer_id != ofproto.OFP_NO_BUFFER else None
+        #     )
+
+        #     self.logger.info("Blocat: trafic catre %s (flow drop instalat)", dst_ip)
+        #     # Nu trimitem PacketOut — pachetul curent este si el dropp-uit.
+        #     return
+        # NEW
         if dst_ip == "10.0.10.3":
             proto = ipv4_pkt.proto  # 6 = TCP, 17 = UDP
 

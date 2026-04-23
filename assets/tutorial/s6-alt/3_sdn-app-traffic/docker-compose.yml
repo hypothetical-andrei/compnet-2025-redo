@@ -1,0 +1,30 @@
+---
+networks:
+  sdn-net:
+    driver: bridge
+
+services:
+
+  controller:
+    build: ./controller
+    container_name: sdn-controller
+    networks:
+      - sdn-net
+    restart: unless-stopped
+
+  topology:
+    build: ./topology
+    container_name: sdn-topology
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_ADMIN
+    security_opt:
+      - seccomp=unconfined   # permite setns() da la nsenter in subprocese
+    networks:
+      - sdn-net
+    environment:
+      CONTROLLER_IP: "controller"
+    depends_on:
+      - controller
+    restart: unless-stopped

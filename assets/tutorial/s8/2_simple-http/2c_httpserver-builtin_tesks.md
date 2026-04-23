@@ -14,9 +14,9 @@ Apoi testați cu:
 
 ```
 
-curl -v [http://localhost:8000/](http://localhost:8000/)
-curl -v [http://localhost:8000/hello](http://localhost:8000/hello)
-curl -v [http://localhost:8000/api/time](http://localhost:8000/api/time)
+curl -v http://localhost:8000/
+curl -v http://localhost:8000/hello
+curl -v http://localhost:8000/api/time
 
 ```
 
@@ -32,7 +32,7 @@ builtin_http_log.txt
 
 #### 2. Adăugați un endpoint nou
 
-În fișierul **simple_http_builtin.py**, modificați clasa `MyHandler` astfel
+În fișierul **2b_simple_http_builtin.py**, modificați clasa `MyHandler` astfel
 încât să existe un nou endpoint:
 
 ```
