@@ -9,11 +9,11 @@ Scenariul: **h1 = scanner (atacator), h2 = victimă (detector activ)**.
 
 ## 1. Pregătirea mediului
 
-Verificați că topologia rulează și că h1/h2 au adresele de date pe `eth1`:
+Verificați că topologia rulează și că h1/h2 au adresele de date pe `eth0`:
 
 ```bash
-podman exec -it h1 ip a show eth1   # 10.0.10.1/24
-podman exec -it h2 ip a show eth1   # 10.0.10.2/24
+podman exec -it h1 ip a show eth0   # 10.0.10.1/24
+podman exec -it h2 ip a show eth0   # 10.0.10.2/24
 ```
 
 ---
@@ -21,17 +21,7 @@ podman exec -it h2 ip a show eth1   # 10.0.10.2/24
 ## 2. Porniți `detect_scan` pe h2
 
 ```bash
-podman exec -it h2 python3 /apps/detect_scan.py eth1
-```
-
-> **De ce `eth1`?** Traficul de la h1 spre h2 trece prin veth-ul conectat la OVS,
-> care apare ca `eth1` în containerul h2. Dacă sniffați pe `eth0`, vedeți doar
-> traficul de management (172.20.0.x).
-
-Așteptați mesajele de confirmare:
-```text
-[INFO] Pornim detect_scan pe interfata eth1
-[INFO] Fereastra=5s, prag porturi=10
+podman exec -it h2 python3 /sem7/4_scan-detector/4a_detect-scan.py eth0
 ```
 
 ---
@@ -41,7 +31,7 @@ Așteptați mesajele de confirmare:
 Într-un terminal separat:
 
 ```bash
-podman exec -it h1 python3 /apps/port_scanner.py 10.0.10.2 1 200
+podman exec -it h1 python3 /sem7/3_port-scanning/3a_port_scanner.py 10.0.10.2 1 200
 ```
 
 Pe măsură ce scanner-ul încearcă conexiuni TCP spre h2, `detect_scan` va vedea
@@ -55,7 +45,7 @@ pachetele SYN și va afișa:
 
 ## 4. Ajustați sensibilitatea
 
-În `apps/detect_scan.py`, modificați:
+În `4_scan-detector/4a_detect-scan.py`, modificați:
 
 ```python
 WINDOW_SECONDS = 2
@@ -74,8 +64,8 @@ Generați trafic obișnuit de pe h1:
 
 ```bash
 podman exec -it h1 ping -c 5 10.0.10.2
-podman exec -d h2 python3 /apps/tcp_server.py 5000
-podman exec -it h1 python3 /apps/tcp_client.py 10.0.10.2 5000
+podman exec -d h2 python3 /sem7/5_mini-ids/tcp_server.py 5000
+podman exec -it h1 python3 /sem7/5_mini-ids/tcp_client.py 10.0.10.2 5000
 # trimiteți 3-4 mesaje, apoi exit
 ```
 

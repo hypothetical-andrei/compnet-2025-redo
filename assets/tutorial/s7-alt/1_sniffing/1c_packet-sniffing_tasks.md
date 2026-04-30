@@ -10,15 +10,15 @@ Tot ce diferă sunt comenzile de rulare.
 Porniți topologia dacă nu rulează deja:
 
 ```bash
-podman compose up -d
-podman logs -f s1  # așteptați "s1 este gata"
+podman-compose up -d
+
 ```
 
 ---
 
 ## 1. Completați `parse_ipv4_header`
 
-Deschideți fișierul `apps/packet_sniffer.py` și implementați funcția marcată cu
+Deschideți fișierul `1_sniffing/1b_packet_sniffer.py` și implementați funcția marcată cu
 `# >>> STUDENT TODO`:
 
 ```python
@@ -38,12 +38,8 @@ return src_ip_str, dst_ip_str, proto, ihl
 ## 2. Porniți snifferul pe h2
 
 ```bash
-podman exec -it h2 python3 /apps/packet_sniffer.py eth1
+podman exec -it h2 python3 /sem7/1_sniffing/1b_packet_sniffer.py eth0
 ```
-
-> **De ce `eth1`?** În containerele acestei topologii, `eth0` este interfața de
-> management (172.20.0.x, folosită de `podman exec`). Interfața de date cu adresele
-> `10.0.10.x` este `eth1` — aceea pe care trece traficul de interes.
 
 ---
 
@@ -56,8 +52,8 @@ podman exec -it h2 python3 /apps/packet_sniffer.py eth1
 podman exec -it h1 ping -c 10 10.0.10.2
 
 # TCP (dacă aveți tcp_server pornit pe h2)
-podman exec -d h2 python3 /apps/tcp_server.py 5000
-podman exec -it h1 python3 /apps/tcp_client.py 10.0.10.2 5000
+podman exec -d h2 python3 /sem7/5_mini-ids/tcp_server.py 5000
+podman exec -it h1 python3 /sem7/5_mini-ids/tcp_client.py 10.0.10.2 5000
 ```
 
 Observați liniile afișate de sniffer:
@@ -77,7 +73,7 @@ Opriți cu `Ctrl-C` după cel puțin 20 de pachete. Copiați output-ul în
 
 ```bash
 # Redirectați output-ul direct la rulare:
-podman exec h2 python3 /apps/packet_sniffer.py eth1 > ./logs/sniffer_log.txt
+podman exec h2 python3 /sem7/1_sniffing/1b_packet_sniffer.py eth0 > ./logs/sniffer_log.txt
 # (generați trafic din alt terminal, apoi Ctrl-C după 20+ pachete)
 ```
 
@@ -93,5 +89,5 @@ podman exec h2 python3 /apps/packet_sniffer.py eth1 > ./logs/sniffer_log.txt
 
 ## Deliverabil
 
-- `apps/packet_sniffer.py` completat
+- `1_sniffing/1b_packet_sniffer.py` completat
 - `logs/sniffer_log.txt` cu cel puțin 20 de linii + răspunsurile la întrebări

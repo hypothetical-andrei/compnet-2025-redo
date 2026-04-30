@@ -1,0 +1,54 @@
+---
+# docker-compose.yml — Seminar 7: packet sniffing, port scanner, IDS
+#
+# Doua containere (h1, h2) conectate la acelasi bridge Podman.
+# Ambele au CAP_NET_RAW pentru socket-urile AF_PACKET.
+# Intregul director al proiectului este montat la /sem7 in containere,
+# astfel incat scripturile din fiecare etapa sunt accesibile direct.
+# Directorul ./logs este montat separat la /logs pentru output-uri.
+#
+# Pornire: podman-compose up -d
+# Oprire:  bash scripts/teardown.sh
+
+networks:
+  sem7-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.10.0/24
+
+services:
+
+  h1:
+    build: .
+    container_name: h1
+    hostname: h1
+    networks:
+      sem7-net:
+        ipv4_address: 10.0.10.1
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    security_opt:
+      - seccomp=unconfined
+    volumes:
+      - .:/sem7          # intregul proiect montat live
+      - ./logs:/logs     # output-uri accesibile pe host
+    restart: unless-stopped
+
+  h2:
+    build: .
+    container_name: h2
+    hostname: h2
+    networks:
+      sem7-net:
+        ipv4_address: 10.0.10.2
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    security_opt:
+      - seccomp=unconfined
+    volumes:
+      - .:/sem7
+      - ./logs:/logs
+    restart: unless-stopped

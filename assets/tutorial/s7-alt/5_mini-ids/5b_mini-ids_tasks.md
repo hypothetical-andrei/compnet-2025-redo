@@ -17,7 +17,7 @@ Funcția este deja implementată în script. Verificați că:
 ## 2. Porniți mini IDS pe h2
 
 ```bash
-podman exec -it h2 python3 /apps/mini_ids.py eth1
+podman exec -it h2 python3 /sem7/5_mini-ids/5a_mini-ids.py eth0
 ```
 
 Lăsați-l să ruleze pe tot parcursul scenariilor de mai jos.
@@ -29,7 +29,7 @@ Lăsați-l să ruleze pe tot parcursul scenariilor de mai jos.
 Din h1, lansați scanner-ul:
 
 ```bash
-podman exec -it h1 python3 /apps/port_scanner.py 10.0.10.2 1 200
+podman exec -it h1 python3 /sem7/3_port-scanning/3a_port_scanner.py 10.0.10.2 1 200
 ```
 
 > ✅ Așteptat în IDS:
@@ -44,7 +44,7 @@ podman exec -it h1 python3 /apps/port_scanner.py 10.0.10.2 1 200
 Folosiți scriptul helper `udp_spray.py` de pe h1:
 
 ```bash
-podman exec -it h1 python3 /apps/udp_spray.py 10.0.10.2 6000 6030
+podman exec -it h1 python3 /sem7/5_mini-ids/udp_spray.py 10.0.10.2 6000 6030
 ```
 
 > ✅ Așteptat în IDS:
@@ -63,7 +63,7 @@ podman exec -it h1 python3 /apps/udp_spray.py 10.0.10.2 6000 6030
 Porniți serverul TCP pe h2 (dacă nu rulează):
 
 ```bash
-podman exec -d h2 python3 /apps/tcp_server.py 5000
+podman exec -d h2 python3 /sem7/5_mini-ids/tcp_server.py 5000
 ```
 
 De pe h1, generați multe conexiuni rapide spre portul 5000:
@@ -145,11 +145,11 @@ Predați un pachet care conține:
 
 | Fișier | Provenit din |
 |--------|-------------|
-| `apps/packet_sniffer.py` | Stage 2, completat |
-| `apps/packet_filter.py` | Stage 3, completat |
-| `apps/port_scanner.py` | Stage 4, completat |
-| `apps/detect_scan.py` | Stage 5 |
-| `apps/mini_ids.py` | Stage 6, completat |
+| `1_sniffing/1b_packet_sniffer.py` | Stage 2, completat |
+| `2_packet-filter/2a_packet-filter.py` | Stage 3, completat |
+| `3_port-scanning/3a_port_scanner.py` | Stage 4, completat |
+| `4_scan-detector/4a_detect-scan.py` | Stage 5 |
+| `5_mini-ids/5a_mini-ids.py` | Stage 6, completat |
 | `logs/sniffer_log.txt` | Stage 2 |
 | `logs/filter_results.txt` | Stage 3 |
 | `logs/scan_results.txt` | Stage 4 |

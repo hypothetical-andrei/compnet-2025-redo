@@ -18,7 +18,7 @@ Implementarea propusă în script este deja completă — verificați că înțe
 ## 2. Test local — scanare pe `127.0.0.1` din interiorul unui container
 
 ```bash
-podman exec -it h1 python3 /apps/port_scanner.py 127.0.0.1 1 200
+podman exec -it h1 python3 /sem7/3_port-scanning/3a_port_scanner.py 127.0.0.1 1 200
 ```
 
 Majoritatea porturilor vor fi `CLOSED` sau `FILTERED` (containerul nu rulează servicii
@@ -31,13 +31,13 @@ pe loopback). Rezultatele se salvează în `/logs/scan_results.txt`.
 Porniți un server TCP pe h2:
 
 ```bash
-podman exec -d h2 python3 /apps/tcp_server.py 5000
+podman exec -d h2 python3 /sem7/5_mini-ids/tcp_server.py 5000
 ```
 
 Rulați scanner-ul de pe h1:
 
 ```bash
-podman exec -it h1 python3 /apps/port_scanner.py 10.0.10.2 4900 5100
+podman exec -it h1 python3 /sem7/3_port-scanning/3a_port_scanner.py 10.0.10.2 4900 5100
 ```
 
 > ✅ Așteptat: portul 5000 apare `OPEN`, restul `CLOSED` sau `FILTERED`.
@@ -85,5 +85,5 @@ print(f"\nRezumat: {open_count} OPEN, {closed_count} CLOSED, {filtered_count} FI
 
 ## Deliverabil
 
-- `apps/port_scanner.py` completat
+- `3_port-scanning/3a_port_scanner.py` completat
 - `logs/scan_results.txt` cu minimum 50 de porturi scanate + răspunsuri

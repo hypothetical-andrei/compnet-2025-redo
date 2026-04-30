@@ -164,7 +164,7 @@ si copiati noul output in `pseudoftp_log.txt` (sub un heading separat, de forma 
 
 ---
 
-## 8. Intrebari de reflexie (de scris la finalul pseudoftp_log.txt)
+## 8. Intrebari de reflecție (de scris la finalul pseudoftp_log.txt)
 
 Raspundeti in 1–3 propozitii la fiecare:
 
