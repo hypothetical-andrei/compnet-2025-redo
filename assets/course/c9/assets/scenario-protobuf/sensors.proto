@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package sensors;
+
+// O singura masurare de la un senzor
+message SensorReading {
+  string sensor_id  = 1;  // identificator unic al senzorului
+  int64  timestamp  = 2;  // unix timestamp (secunde)
+  double value      = 3;  // valoarea masurata
+  string unit       = 4;  // unitatea de masura: "celsius", "hpa", "pct"
+}
+
+// Un lot de masurari trimise de o statie
+message SensorBatch {
+  string          station_id = 1;  // identificator statie
+  repeated SensorReading readings = 2;  // lista de masurari
+}

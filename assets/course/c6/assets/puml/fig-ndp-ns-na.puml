@@ -1,0 +1,28 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+
+title NDP: Neighbor Solicitation / Advertisement (echivalent ARP)
+
+participant "Host A\nfe80::1" as A
+participant "Rețea locală" as N
+participant "Host B\nfe80::2" as B
+
+A -> N : NS (multicast solicitat-node)\n"Cine are fe80::2? Eu sunt A, MAC aa:bb:cc:dd:ee:ff"
+note right of N
+  Destinație: ff02::1:ff00:2
+  (solicited-node multicast)
+  Nu broadcast ca în ARP
+end note
+
+N -> B : NS livrat doar către B
+B -> A : NA (unicast)\n"Eu am fe80::2, MAC-ul meu e 11:22:33:44:55:66"
+
+note right of A
+  Cache vecini actualizat:
+  fe80::2 -> 11:22:33:44:55:66
+end note
+@enduml

@@ -1,22 +1,19 @@
-version: "3.9"
-
 services:
-
   web:
-    image: python:3
-    command: ["python3", "-m", "http.server", "8000"]
-    expose:
-      - "8000"
+    image: nginx:alpine
+
+  db:
+    image: redis:7-alpine
 
   dns-server:
-    build:
-      context: .
-    command: ["python3", "dns_server.py"]
-    ports:
-      - "5353:5353/udp"
+    build: .
+    expose:
+      - "5353/udp"
 
   debug:
-    image: busybox
-    command: ["sh"]
-    stdin_open: true
-    tty: true
+    image: alpine:latest
+    command: sh -c "apk add --no-cache bind-tools iputils && sleep infinity"
+    depends_on:
+      - web
+      - db
+      - dns-server

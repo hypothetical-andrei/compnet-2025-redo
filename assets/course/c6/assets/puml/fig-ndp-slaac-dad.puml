@@ -1,0 +1,34 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+
+title NDP: SLAAC și DAD (Duplicate Address Detection)
+
+participant "Host\n(adresă tentativă)" as H
+participant "Rețea locală" as N
+participant "Router" as R
+
+H -> H : Generează link-local tentativă\nfe80:: + interface ID (EUI-64 / random)
+
+H -> N : NS pentru propria adresă tentativă\n(DAD — destinație: solicited-node multicast)
+note right of N
+  Dacă cineva răspunde cu NA
+  → conflict, adresa nu e folosită
+end note
+
+N -> H : (fără răspuns → nicio coliziune)
+H -> H : Link-local confirmată și activată
+
+R -> N : RA cu prefix global\n2001:db8:1::/64
+N -> H : RA livrat
+
+H -> H : Construiește adresă globală\n2001:db8:1:: + interface ID
+
+H -> N : NS pentru adresa globală tentativă\n(DAD repetat)
+N -> H : (fără răspuns → nicio coliziune)
+
+H -> H : Adresă globală activată\nHost complet configurat fără DHCP
+@enduml

@@ -8,13 +8,16 @@ services:
     depends_on:
       - web
       - api
+    restart: unless-stopped
 
   web:
     build: ./web
     expose:
       - "8000"
+    restart: unless-stopped
 
   api:
     build: ./api
     expose:
       - "5000"
+    restart: unless-stopped

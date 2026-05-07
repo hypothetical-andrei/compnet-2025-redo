@@ -1,0 +1,35 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+
+rectangle "MIME type" as mime {
+  rectangle "text/html" as html
+  rectangle "application/json" as json
+  rectangle "image/png" as png
+  rectangle "application/octet-stream" as bin
+}
+
+note right of html
+Content: web page markup
+charset: utf-8
+end note
+
+note right of json
+Content: structured data
+parsed by JavaScript
+end note
+
+note right of png
+Content: raster image
+binary payload
+end note
+
+note right of bin
+Content: unknown / generic
+treat as raw bytes
+end note
+
+@enduml

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dijkstra Visualizer</title>
+<style>
+  body { font-family: sans-serif; padding: 1rem; background: #fff; color: #111; }
+  svg { width: 100%; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9; }
+  .controls { display: flex; align-items: center; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
+  button { cursor: pointer; padding: 4px 12px; border: 1px solid #ccc; border-radius: 6px; background: #fff; font-size: 13px; }
+  button:hover { background: #f0f0f0; }
+  table { border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 4px 10px; border: 1px solid #ddd; text-align: center; }
+  th { color: #666; font-weight: 500; }
+  .updated  { background: #EAF3DE; color: #27500A; font-weight: 500; }
+  .settled  { background: #E6F1FB; color: #0C447C; }
+  #dj-action { font-size: 13px; color: #555; margin-top: 8px; min-height: 18px; }
+  #dj-step-label { font-size: 13px; color: #888; }
+</style>
+</head>
+<body>
+
+<h2 style="font-size:18px;font-weight:500;margin:0 0 4px;">Dijkstra step visualizer</h2>
+<p style="font-size:13px;color:#555;margin:0 0 1rem;">Source: C — always expands the cheapest unsettled node (greedy)</p>
+
+<svg id="dj-svg" viewBox="0 0 500 260"></svg>
+
+<div class="controls">
+  <button id="dj-prev">← prev</button>
+  <button id="dj-next">next →</button>
+  <button id="dj-reset">reset</button>
+  <span id="dj-step-label"></span>
+</div>
+
+<div style="font-size:12px;color:#888;margin-bottom:4px;">
+  Distances from C &nbsp;
+  <span style="font-size:11px;">(blue = settled &nbsp; green = just updated)</span>
+</div>
+<table id="dj-dist-table"></table>
+<div id="dj-action"></div>
+
+<script>
+(function () {
+  const graph = {
+    A: { B: 4, C: 2 },
+    B: { D: 2, E: 3, A: 4 },
+    C: { D: 3, E: 1, A: 2 },
+    D: { C: 3, B: 2 },
+    E: { B: 3, C: 1 }
+  };
+  const source = "C";
+  const nodes = Object.keys(graph);
+  const positions = {
+    A: { x: 250, y: 40 },
+    B: { x: 430, y: 130 },
+    C: { x: 70,  y: 130 },
+    D: { x: 250, y: 220 },
+    E: { x: 160, y: 130 }
+  };
+
+  function buildSteps() {
+    let dist = {}; nodes.forEach(v => dist[v] = Infinity); dist[source] = 0;
+    let settled = new Set();
+    let steps = [{
+      dist: { ...dist }, settled: new Set(settled),
+      active: null, visiting: null,
+      msg: "Initial state — source C = 0, all others ∞", updated: []
+    }];
+
+    while (settled.size < nodes.length) {
+      // pick cheapest unsettled
+      let u = null, best = Infinity;
+      for (let v of nodes) { if (!settled.has(v) && dist[v] < best) { best = dist[v]; u = v; } }
+      if (u === null) break;
+      settled.add(u);
+      steps.push({
+        dist: { ...dist }, settled: new Set(settled),
+        active: null, visiting: u,
+        msg: `Pop ${u} (dist=${dist[u]}) from heap — now settled`, updated: []
+      });
+
+      for (let [v, w] of Object.entries(graph[u])) {
+        const nd = dist[u] + w;
+        if (nd < dist[v]) {
+          dist[v] = nd;
+          steps.push({
+            dist: { ...dist }, settled: new Set(settled),
+            active: [u, v], visiting: u,
+            msg: `Relax ${u}→${v} (w=${w}): ${v} updated to ${nd}`, updated: [v]
+          });
+        } else {
+          steps.push({
+            dist: { ...dist }, settled: new Set(settled),
+            active: [u, v], visiting: u,
+            msg: `Check ${u}→${v} (w=${w}): no improvement (${dist[v]} ≤ ${nd})`, updated: []
+          });
+        }
+      }
+    }
+    steps.push({
+      dist: { ...dist }, settled: new Set(settled),
+      active: null, visiting: null,
+      msg: "Done — all nodes settled, shortest paths found", updated: []
+    });
+    return steps;
+  }
+
+  const steps = buildSteps();
+  let cur = 0;
+  const svg = document.getElementById('dj-svg');
+
+  function draw(step) {
+    svg.innerHTML = '';
+    const s = steps[step];
+    const ae = s.active;
+
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    function makeMarker(id, color) {
+      const m = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+      m.setAttribute('id', id); m.setAttribute('markerWidth', '7'); m.setAttribute('markerHeight', '7');
+      m.setAttribute('refX', '6'); m.setAttribute('refY', '3'); m.setAttribute('orient', 'auto');
+      const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      p.setAttribute('d', 'M0,0 L0,6 L7,3 z'); p.setAttribute('fill', color); m.appendChild(p);
+      return m;
+    }
+    defs.appendChild(makeMarker('arr', '#ccc'));
+    defs.appendChild(makeMarker('arrg', '#1D9E75'));
+    defs.appendChild(makeMarker('arrb', '#185FA5'));
+    svg.appendChild(defs);
+
+    for (let u of nodes) {
+      for (let [v, w] of Object.entries(graph[u])) {
+        const p1 = positions[u], p2 = positions[v];
+        const dx = p2.x - p1.x, dy = p2.y - p1.y, len = Math.sqrt(dx * dx + dy * dy);
+        const r = 18;
+        const sx = p1.x + dx / len * r, sy = p1.y + dy / len * r;
+        const ex = p2.x - dx / len * (r + 8), ey = p2.y - dy / len * (r + 8);
+        const isActive = ae && ae[0] === u && ae[1] === v;
+        const isBothSettled = s.settled.has(u) && s.settled.has(v);
+        let strokeColor = '#ccc', markerId = 'arr';
+        if (isActive) { strokeColor = '#1D9E75'; markerId = 'arrg'; }
+        else if (isBothSettled) { strokeColor = '#B5D4F4'; markerId = 'arrb'; }
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', sx); line.setAttribute('y1', sy);
+        line.setAttribute('x2', ex); line.setAttribute('y2', ey);
+        line.setAttribute('stroke', strokeColor);
+        line.setAttribute('stroke-width', isActive ? '2.5' : '1.2');
+        line.setAttribute('marker-end', 'url(#' + markerId + ')');
+        svg.appendChild(line);
+        const mx = (p1.x + p2.x) / 2 + (dy / len) * 12, my = (p1.y + p2.y) / 2 - (dx / len) * 12;
+        const wt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        wt.setAttribute('x', mx); wt.setAttribute('y', my);
+        wt.setAttribute('text-anchor', 'middle'); wt.setAttribute('font-size', '11');
+        wt.setAttribute('fill', isActive ? '#0F6E56' : '#bbb');
+        wt.textContent = w; svg.appendChild(wt);
+      }
+    }
+
+    for (let v of nodes) {
+      const p = positions[v];
+      const isSettled  = s.settled.has(v);
+      const isVisiting = s.visiting === v;
+      const isUpdated  = s.updated.includes(v);
+      const isSource   = v === source;
+
+      let fill = '#fff', stroke = '#aaa';
+      if (isVisiting)     { fill = '#97C459'; stroke = '#3B6D11'; }
+      else if (isUpdated) { fill = '#C0DD97'; stroke = '#3B6D11'; }
+      else if (isSettled) { fill = '#B5D4F4'; stroke = '#185FA5'; }
+      else if (isSource)  { fill = '#E6F1FB'; stroke = '#185FA5'; }
+
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', p.x); circle.setAttribute('cy', p.y); circle.setAttribute('r', 18);
+      circle.setAttribute('fill', fill); circle.setAttribute('stroke', stroke);
+      circle.setAttribute('stroke-width', '1.5');
+      svg.appendChild(circle);
+
+      const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      lbl.setAttribute('x', p.x); lbl.setAttribute('y', p.y + 1);
+      lbl.setAttribute('text-anchor', 'middle'); lbl.setAttribute('dominant-baseline', 'middle');
+      lbl.setAttribute('font-size', '13'); lbl.setAttribute('font-weight', '500');
+      lbl.setAttribute('fill', isSettled || isVisiting || isUpdated ? '#0C447C' : '#111');
+      lbl.textContent = v; svg.appendChild(lbl);
+
+      const d = s.dist[v];
+      const dlbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      dlbl.setAttribute('x', p.x); dlbl.setAttribute('y', p.y + 30);
+      dlbl.setAttribute('text-anchor', 'middle'); dlbl.setAttribute('font-size', '11');
+      dlbl.setAttribute('fill', d === Infinity ? '#ccc' : isSettled ? '#185FA5' : '#1D9E75');
+      dlbl.textContent = d === Infinity ? '∞' : d; svg.appendChild(dlbl);
+    }
+  }
+
+  function renderTable(step) {
+    const s = steps[step];
+    const t = document.getElementById('dj-dist-table');
+    t.innerHTML =
+      '<tr>' + nodes.map(v => `<th>${v}</th>`).join('') + '</tr>' +
+      '<tr>' + nodes.map(v => {
+        const d = s.dist[v];
+        let cls = s.settled.has(v) ? 'settled' : '';
+        if (s.updated.includes(v)) cls = 'updated';
+        return `<td class="${cls}">${d === Infinity ? '∞' : d}</td>`;
+      }).join('') + '</tr>';
+    document.getElementById('dj-action').textContent = s.msg;
+    document.getElementById('dj-step-label').textContent = `Step ${step} / ${steps.length - 1}`;
+  }
+
+  function render() { draw(cur); renderTable(cur); }
+
+  document.getElementById('dj-next').onclick  = () => { if (cur < steps.length - 1) { cur++; render(); } };
+  document.getElementById('dj-prev').onclick  = () => { if (cur > 0) { cur--; render(); } };
+  document.getElementById('dj-reset').onclick = () => { cur = 0; render(); };
+
+  render();
+})();
+</script>
+</body>
+</html>

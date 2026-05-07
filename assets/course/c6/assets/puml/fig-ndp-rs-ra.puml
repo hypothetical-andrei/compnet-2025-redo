@@ -1,0 +1,28 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+
+title NDP: Router Solicitation / Advertisement
+
+participant "Host nou\nfe80::A" as H
+participant "Rețea locală" as N
+participant "Router\nfe80::1" as R
+
+H -> N : RS (opțional)\nmulticast all-routers ff02::2\n"Există vreun router pe link?"
+
+note right of R
+  Routerul trimite RA periodic
+  indiferent de RS
+end note
+
+R -> N : RA (multicast all-nodes ff02::1)\nprefix: 2001:db8:1::/64\nMTU, hop limit, flag M/O, lifetime
+
+note right of H
+  Host reține:
+  - default gateway: fe80::1
+  - prefix pentru SLAAC: 2001:db8:1::/64
+end note
+@enduml

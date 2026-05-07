@@ -1,18 +1,17 @@
 services:
   node1:
     build: ./nodes/node1
-    container_name: node1
-    networks: [sshnet]
+    networks:
+      - sshnet
 
   controller:
-    image: python:3.12-slim
-    working_dir: /app
+    build: ./controller
     volumes:
-      - ./controller:/app
       - ./payload:/payload
-    depends_on: [node1]
-    command: ["python", "provision.py"]
-    networks: [sshnet]
+    depends_on:
+      - node1
+    networks:
+      - sshnet
 
 networks:
   sshnet:
