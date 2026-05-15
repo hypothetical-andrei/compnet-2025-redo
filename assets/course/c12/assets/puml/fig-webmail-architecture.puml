@@ -1,0 +1,23 @@
+@startuml
+actor Browser
+
+node "WebMail Application" {
+  component "HTTP UI" as UI
+  component "IMAP Client" as IMAPC
+  component "SMTP Client" as SMTPC
+}
+
+node "Mail Server" {
+  component "IMAP Service" as IMAPS
+  component "SMTP Submission" as SMTPS
+  database "Mailbox" as Mailbox
+}
+
+Browser -> UI : HTTPS
+UI -> IMAPC : list/read messages
+UI -> SMTPC : send message
+IMAPC -> IMAPS : IMAP
+SMTPC -> SMTPS : SMTP submission
+IMAPS -> Mailbox
+SMTPS -> Mailbox : local delivery / relay
+@enduml

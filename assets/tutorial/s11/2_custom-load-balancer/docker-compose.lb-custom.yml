@@ -1,34 +1,28 @@
-
-version: '3.9'
-
 services:
-  web1-lb:
+  web1:
     image: python:3.11-alpine
-    container_name: web1-lb
     working_dir: /app
     volumes:
-      - ./web1:/app
-    command: ["python3", "-m", "http.server", "8000"]
+      - ./web1:/app:ro
+    command: ["python", "-m", "http.server", "8000"]
     expose:
       - "8000"
 
-  web2-lb:
+  web2:
     image: python:3.11-alpine
-    container_name: web2-lb
     working_dir: /app
     volumes:
-      - ./web2:/app
-    command: ["python3", "-m", "http.server", "8000"]
+      - ./web2:/app:ro
+    command: ["python", "-m", "http.server", "8000"]
     expose:
       - "8000"
 
-  web3-lb:
+  web3:
     image: python:3.11-alpine
-    container_name: web3-lb
     working_dir: /app
     volumes:
-      - ./web3:/app
-    command: ["python3", "-m", "http.server", "8000"]
+      - ./web3:/app:ro
+    command: ["python", "-m", "http.server", "8000"]
     expose:
       - "8000"
 
@@ -36,14 +30,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.lb
-    container_name: lb-custom
+    volumes:
+      - ./simple_lb.py:/app/simple_lb.py:ro
     ports:
       - "8080:8080"
     depends_on:
-      - web1-lb
-      - web2-lb
-      - web3-lb
-
-networks:
-  default:
-    name: lbnet
+      - web1
+      - web2
+      - web3

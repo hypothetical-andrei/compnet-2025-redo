@@ -1,79 +1,202 @@
-## Sarcini – Stage 4: LB Custom în Compose
+### Sarcini - Stage 4: LB Custom in Compose
 
-Creați fișierul:
-`stage4_lb_vs_nginx.txt`
+Creati fisierul:
 
-Includeți:
-
----
-
-### **1. Output-ul a 6 comenzi curl prin LB-ul custom**
-
-Exemplu:
-
-```
-→ Hello from web1
-→ Hello from web2
-→ Hello from web3
-...
+```text
+stage4_lb_vs_nginx.txt
 ```
 
 ---
 
-### **2. Logurile LB-ului pentru aceleași cereri**
+### 1. Output pentru 6 cereri
 
-Copiați:
+Executati:
 
+```bash
+for i in 1 2 3 4 5 6; do
+  curl -s http://localhost:8080
+  echo
+done
 ```
-[INFO] ... → web1
-[INFO] ... → web2
-...
-```
+
+Copiati raspunsurile obtinute.
+
+Observati:
+
+- daca backend-urile alterneaza
+- daca algoritmul round-robin functioneaza corect
 
 ---
 
-### **3. Test backend picat**
+### 2. Logurile LB-ului
 
-Opriți web2:
+Afisati logurile:
 
+```bash
+docker compose -f docker-compose.lb-custom.yml logs lb-custom
 ```
+
+Copiati logurile relevante.
+
+Identificati:
+
+- conexiunile clientilor
+- backend-ul selectat
+- eventuale erori
+
+---
+
+### 3. Test backend indisponibil
+
+Opriti unul dintre backend-uri:
+
+```bash
 docker compose -f docker-compose.lb-custom.yml stop web2
 ```
 
-Trimiteți 5 cereri la LB.
-Note:
+Trimiteti din nou 6 cereri:
 
-* răspunsuri
-* erori
-* comportament general
+```bash
+for i in 1 2 3 4 5 6; do
+  curl -s http://localhost:8080
+  echo
+done
+```
 
----
+Observati:
 
-### **4. Comparație Nginx vs LB custom (maxim 6–8 fraze)**
-
-Scrieți:
-
-* două lucruri pe care LB custom le face bine
-* două lucruri pe care LB custom le face prost
-* un aspect la care Nginx este mult superior
-* o idee de îmbunătățire pentru LB
+- daca load balancer-ul continua sa functioneze
+- daca apar erori
+- ce se intampla cand backend-ul selectat nu raspunde
 
 ---
 
-### **5. Bonus opțional**
+### 4. Implementare toleranta de baza la defecte
 
-Faceți web3 lent (cum este descris în tutorial).
-Explicați ce observați.
+Extindeti implementarea astfel incat:
+
+- daca un backend nu raspunde:
+  - sa fie incercat urmatorul backend
+- toate backend-urile sa fie incercate cel mult o singura data
+- daca toate backend-urile sunt indisponibile:
+  - sa fie trimis:
+
+```http
+HTTP/1.1 503 Service Unavailable
+Content-Type: text/plain
+
+No backend available
+```
 
 ---
 
-# **Concluzie Stage 4**
+### 5. Retestare dupa implementare
 
-Acum avem:
+Cu `web2` oprit, repetati:
 
-* un reverse proxy industrial (Nginx)
-* un reverse proxy educational (load balancer custom)
-* comparație practică
-* integrare completă în Compose
+```bash
+for i in 1 2 3 4 5 6; do
+  curl -s http://localhost:8080
+  echo
+done
+```
 
+Verificati:
+
+- daca cererile continua sa functioneze
+- daca load balancer-ul evita backend-ul indisponibil
+- daca raspunsurile vin doar de la backend-urile active
+
+---
+
+### 6. Comparatie Nginx vs LB custom
+
+Scrieti maxim 6-8 fraze despre:
+
+- doua lucruri pe care LB-ul custom le face bine
+- doua lucruri pe care LB-ul custom le face prost
+- un aspect la care NGINX este mult superior
+- o idee de imbunatatire pentru LB-ul custom
+
+---
+
+### 7. Bonus
+
+Opriti toate backend-urile:
+
+```bash
+docker compose -f docker-compose.lb-custom.yml stop web1 web2 web3
+```
+
+Trimiteti o cerere:
+
+```bash
+curl -v http://localhost:8080
+```
+
+Verificati:
+
+- daca este returnat codul HTTP 503
+- daca mesajul este:
+
+```text
+No backend available
+```
+
+Add this final section to the markdown:
+
+````md
+---
+
+## Ce trebuie incarcat
+
+Arhivati continutul proiectului intr-un fisier:
+
+```text
+stage4_lb_custom.zip
+````
+
+Arhiva trebuie sa contina:
+
+```text
+2_custom-load-balancer/
+```
+
+inclusiv:
+
+* `simple_lb.py`
+* `docker-compose.lb-custom.yml`
+* eventuale modificari suplimentare realizate
+* fisierul:
+
+  * `stage4_lb_vs_nginx.txt`
+
+---
+
+## Cerinte minime
+
+Pentru punctaj complet:
+
+* load balancing round-robin functional
+* tratarea backend-urilor indisponibile
+* returnarea codului HTTP 503 daca toate backend-urile sunt indisponibile
+* completarea fisierului de raspunsuri
+* explicatiile comparative NGINX vs LB custom
+
+---
+
+## Observatii
+
+Codul trebuie sa poata fi pornit folosind:
+
+```bash
+docker compose -f docker-compose.lb-custom.yml up --build
+```
+
+Nu includeti:
+
+* directoare `.git`
+* directoare `__pycache__`
+* fisiere temporare
+* imagini Docker exportate
 

@@ -1,0 +1,22 @@
+@startuml
+actor Sender
+participant "Submission Server\n(MSA)" as MSA
+participant "Relay Server\n(MTA)" as MTA
+participant "Mailbox Server\n(MDA)" as MDA
+
+Sender -> MSA : SMTP submission\nMAIL FROM / RCPT TO / DATA
+MSA -> MTA : relay
+MTA -> MDA : final delivery
+
+note right of MSA
+Adds a Received header
+end note
+
+note right of MTA
+Adds another Received header
+end note
+
+note right of MDA
+Stores message in mailbox
+end note
+@enduml
